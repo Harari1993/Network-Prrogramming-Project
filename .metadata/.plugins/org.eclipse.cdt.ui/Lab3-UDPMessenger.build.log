@@ -1,0 +1,6 @@
+00:46:38 **** Clean-only build of configuration Debug for project Lab3-UDPMessenger ****
+make clean 
+Cannot run program "make": Unknown reason
+
+00:46:38 Build Finished (took 201ms)
+

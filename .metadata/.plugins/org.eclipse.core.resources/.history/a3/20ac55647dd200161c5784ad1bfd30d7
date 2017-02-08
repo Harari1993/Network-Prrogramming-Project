@@ -1,0 +1,78 @@
+/*
+ * main.cpp
+ *
+ *  Created on: Feb 6, 2013
+ *      Author: Eliav Menachi
+ */
+
+#ifndef MAIN_CPP_
+#define MAIN_CPP_
+
+#include <iostream>
+#include <string.h>
+#include "TCPMessengerClient.h"
+
+using namespace std;
+
+int main() {
+	printInstructions();
+	TCPMessengerClient* messenger = new TCPMessengerClient();
+	while (true) {
+		string msg;
+		string command;
+		cin >> command;
+		if (command == "c") {
+			string ip;
+			cin >> ip;
+			messenger->connect(ip);
+		} else if (command == "o") {
+			string ip;
+			cin >> ip;
+			if (!messenger->open(ip)) {
+				cout << "Failed opening session with client " << ip << endl;
+			}
+		} else if (command == "s") {
+			cin >> msg;
+			if (msg.size() > 0 && msg[0] == ' ')
+				msg.erase(0, 1);
+			if (!messenger->isActiveClientSession()) {
+				cout << "Fail: No client session is active" << endl;
+				printInstructions();
+			} else {
+				messenger->send(msg);
+			}
+		} else if (command == "cs") {
+			messenger->closeActiveSession();
+		} else if (command == "d") {
+			messenger->disconnect();
+		} else if (command == "x") {
+			break;
+		} else {
+			cout << "wrong input" << endl;
+			printInstructions();
+		}
+	}
+	messenger->disconnect();
+	delete messenger;
+	cout << "messenger was closed" << endl;
+	return 0;
+}
+
+
+void printInstructions() {
+	cout << "Welcome to TCP messenger" << endl << endl;
+	cout << "c <server ip>" << endl;
+	cout << "Connect to the remote server on the given ip." << endl << endl;
+	cout << "<peer ip>:<peer port>" << endl;
+	cout <<	"Open a session with a peer in the given ip and port." << endl << endl;
+	cout << "s <message>" << endl;
+	cout <<	"Sends a message to the remote peer on the open session." <<endl << endl;
+	cout << "cs" << endl;
+	cout << "Closes an opened session." << endl << endl;
+	cout << "d" << endl;
+	cout <<	"Disconnect from server." << endl << endl;
+	cout << "x" << endl;
+	cout << "Exit" << endl << endl;
+}
+
+#endif /* MAIN_CPP_ */

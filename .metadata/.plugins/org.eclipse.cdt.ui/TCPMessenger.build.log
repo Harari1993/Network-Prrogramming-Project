@@ -1,0 +1,15 @@
+11:14:33 **** Incremental Build of configuration Debug for project TCPMessenger ****
+make all 
+Building file: ../TCPMessengerClient.cpp
+Invoking: GCC C++ Compiler
+g++ -I"/home/user/Documents/lab8/TCPMessenger" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TCPMessengerClient.d" -MT"TCPMessengerClient.o" -o "TCPMessengerClient.o" "../TCPMessengerClient.cpp"
+Finished building: ../TCPMessengerClient.cpp
+ 
+Building target: TCPMessenger
+Invoking: GCC C++ Linker
+g++ -L"/home/user/Documents/lab8/TCPMessenger/Debug" -pthread -o "TCPMessenger"  ./MThread.o ./TCPMessengerClient.o ./TCPSocket.o ./main.o   -lpthread
+Finished building target: TCPMessenger
+ 
+
+11:14:34 Build Finished (took 587ms)
+

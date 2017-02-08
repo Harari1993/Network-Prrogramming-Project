@@ -1,0 +1,81 @@
+11:14:03 **** Incremental Build of configuration Release for project TCPMessenger ****
+make all 
+Building file: ../TCPMessengerClient.cpp
+Invoking: GCC C++ Compiler
+g++ -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TCPMessengerClient.d" -MT"TCPMessengerClient.o" -o "TCPMessengerClient.o" "../TCPMessengerClient.cpp"
+Finished building: ../TCPMessengerClient.cpp
+ 
+Building file: ../TCPSocket.cpp
+Invoking: GCC C++ Compiler
+g++ -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TCPSocket.d" -MT"TCPSocket.o" -o "TCPSocket.o" "../TCPSocket.cpp"
+Finished building: ../TCPSocket.cpp
+ 
+Building target: TCPMessenger
+Invoking: GCC C++ Linker
+g++  -o "TCPMessenger"  ./MThread.o ./TCPMessengerClient.o ./TCPSocket.o ./main.o   
+./MThread.o: In function `MThread::waitForThread()':
+MThread.cpp:(.text+0x4b): undefined reference to `pthread_join'
+makefile:44: recipe for target 'TCPMessenger' failed
+./MThread.o: In function `MThread::~MThread()':
+MThread.cpp:(.text+0x7d): undefined reference to `pthread_cancel'
+./MThread.o: In function `MThread::~MThread()':
+MThread.cpp:(.text+0xa5): undefined reference to `pthread_cancel'
+./MThread.o: In function `MThread::start()':
+MThread.cpp:(.text+0x2f): undefined reference to `pthread_create'
+./TCPMessengerClient.o: In function `TCPMessengerClient::TCPMessengerClient()':
+TCPMessengerClient.cpp:(.text+0x3): undefined reference to `vtable for TCPMessengerClient'
+collect2: error: ld returned 1 exit status
+make: *** [TCPMessenger] Error 1
+11:14:04 **** Incremental Build of configuration Debug for project TCPMessenger ****
+make all 
+Building file: ../TCPMessengerClient.cpp
+Invoking: GCC C++ Compiler
+g++ -I"/home/user/Documents/lab8/TCPMessenger" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TCPMessengerClient.d" -MT"TCPMessengerClient.o" -o "TCPMessengerClient.o" "../TCPMessengerClient.cpp"
+Finished building: ../TCPMessengerClient.cpp
+ 
+Building file: ../TCPSocket.cpp
+Invoking: GCC C++ Compiler
+g++ -I"/home/user/Documents/lab8/TCPMessenger" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TCPSocket.d" -MT"TCPSocket.o" -o "TCPSocket.o" "../TCPSocket.cpp"
+Finished building: ../TCPSocket.cpp
+ 
+Building target: TCPMessenger
+Invoking: GCC C++ Linker
+g++ -L"/home/user/Documents/lab8/TCPMessenger/Debug" -pthread -o "TCPMessenger"  ./MThread.o ./TCPMessengerClient.o ./TCPSocket.o ./main.o   -lpthread
+./TCPMessengerClient.o: In function `TCPMessengerClient::TCPMessengerClient()':
+/home/user/Documents/lab8/TCPMessenger/Debug/../TCPMessengerClient.cpp:12: undefined reference to `vtable for TCPMessengerClient'
+collect2: error: ld returned 1 exit status
+make: *** [TCPMessenger] Error 1
+makefile:47: recipe for target 'TCPMessenger' failed
+11:14:32 **** Incremental Build of configuration Release for project TCPMessenger ****
+make all 
+Building file: ../TCPMessengerClient.cpp
+Invoking: GCC C++ Compiler
+g++ -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TCPMessengerClient.d" -MT"TCPMessengerClient.o" -o "TCPMessengerClient.o" "../TCPMessengerClient.cpp"
+Finished building: ../TCPMessengerClient.cpp
+ 
+Building target: TCPMessenger
+Invoking: GCC C++ Linker
+g++  -o "TCPMessenger"  ./MThread.o ./TCPMessengerClient.o ./TCPSocket.o ./main.o   
+./MThread.o: In function `MThread::waitForThread()':
+MThread.cpp:(.text+0x4b): undefined reference to `pthread_join'
+./MThread.o: In function `MThread::~MThread()':
+MThread.cpp:(.text+0x7d): undefined reference to `pthread_cancel'
+./MThread.o: In function `MThread::~MThread()':
+MThread.cpp:(.text+0xa5): undefined reference to `pthread_cancel'
+./MThread.o: In function `MThread::start()':
+MThread.cpp:(.text+0x2f): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+make: *** [TCPMessenger] Error 1
+makefile:44: recipe for target 'TCPMessenger' failed
+11:14:33 **** Incremental Build of configuration Debug for project TCPMessenger ****
+make all 
+Building file: ../TCPMessengerClient.cpp
+Invoking: GCC C++ Compiler
+g++ -I"/home/user/Documents/lab8/TCPMessenger" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"TCPMessengerClient.d" -MT"TCPMessengerClient.o" -o "TCPMessengerClient.o" "../TCPMessengerClient.cpp"
+Finished building: ../TCPMessengerClient.cpp
+ 
+Building target: TCPMessenger
+Invoking: GCC C++ Linker
+g++ -L"/home/user/Documents/lab8/TCPMessenger/Debug" -pthread -o "TCPMessenger"  ./MThread.o ./TCPMessengerClient.o ./TCPSocket.o ./main.o   -lpthread
+Finished building target: TCPMessenger
+ 
