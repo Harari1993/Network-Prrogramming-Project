@@ -22,6 +22,12 @@
 #define SEND_MSG_TO_PEER			4
 #define SESSION_REFUSED				5
 #define SESSION_ESTABLISHED			6
+#define USER_CONNECTED              7
+#define USER_NOT_CONNECTED          8
+#define LOGGED_IN                   9
+#define IN_SESSION                  10
+#define IN_ROOM                     11
+
 
 #define TEST_PEER_NAME "test"
 #define SESSION_REFUSED_MSG "Connection to peer refused, peer might be busy or disconnected, try again later"
