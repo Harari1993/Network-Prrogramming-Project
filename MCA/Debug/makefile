@@ -37,26 +37,22 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: TCPMessenger
-
-dependents:
-	-cd /home/user/Documents/lab8/TCPMessenger/Release && $(MAKE) all
+all: MCA
 
 # Tool invocations
-TCPMessenger: $(OBJS) $(USER_OBJS) /home/user/Documents/lab8/TCPMessenger/Release/TCPMessenger
+MCA: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L"/home/user/Documents/lab8/TCPMessenger/Debug" -pthread -o "TCPMessenger" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -pthread -o "MCA" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) TCPMessenger
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) MCA
 	-@echo ' '
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/user/Documents/lab8/TCPMessenger/Release/TCPMessenger:
 
 -include ../makefile.targets

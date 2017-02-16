@@ -143,6 +143,115 @@ bool TCPMessengerClient::closeActiveSession() {
 	return false;
 }
 
+/*
+ * Function that helps send the request to print all the users
+ */
+void TCPMessengerClient::printAllUsers(){
+	if(this->state == NOT_CONNECTED) //print all users ONLY when connected
+		cout<<"You are not connected"<<endl;
+	else
+		this->TCPtoServerCommandProtocol(REG_USERS);
+}
+
+/*
+ * Function that helps send the request to print all of the connected users
+ */
+void TCPMessengerClient::printConnectedUsers()
+{
+	//print all connected users ONLY when connected
+	if(this->state == NOT_CONNECTED)
+		cout<<"You are not connected"<<endl;
+	else
+		this->TCPtoServerCommandProtocol(CONNECTED_USERS);
+
+}
+
+/*
+ * Helper function that sends messages to server
+ */
+void TCPMessengerClient::TCPtoServerMessage(string msg,int protocol){
+	this->TCPtoServerCommandProtocol(protocol);
+
+	int msglen=htonl(msg.length());
+	//Sends the command to the server
+	_mainSocket->send((char*)&msglen,4);
+	//Sends the message to the server
+	_mainSocket->send(msg.c_str(),(msg.length()));
+}
+/*
+ * Helper function that sends commands to the server
+ */
+void TCPMessengerClient::TCPtoServerCommandProtocol(int protocol)
+{
+	int command = htonl(protocol);
+	_mainSocket->send((char*)&command,4);
+
+}
+
+bool TCPMessengerClient::loginUser(string user,string pass) {
+	if (state == CONNECTED) {
+		string msg = user + " " + pass;
+		this->TCPtoServerMessage(msg,USER_LOGIN_REQUEST);
+		//Sets this client as the userName
+		userName=user;
+		return true;
+	} else if (state == NOT_CONNECTED) {
+		puts("You are not connected to any server");
+		return false;
+	} else {
+		puts("You must disconnect from server first");
+		return false;
+	}
+}
+
+bool TCPMessengerClient::registerUser(string user,string pass) {
+	if (state == CONNECTED) {
+		string msg = user + " " + pass;
+		this->TCPtoServerMessage(msg,CREATE_NEW_USER);
+		//Sets this client as the userName
+		userName=user;
+		return true;
+	} else if (state == NOT_CONNECTED) {
+		puts("You are not connected to any server");
+		return false;
+	} else {
+		puts("You must disconnect from server first");
+		return false;
+	}
+}
+/*
+ * Helper function for closing a room
+ */
+void TCPMessengerClient::closeRoom(string roomName){
+
+	if(state == IN_ROOM)
+		this->TCPtoServerMessage(roomName,CLOSE_ROOM_REQUEST);
+
+}
+
+/*
+ * functions that sends a request to create a new roo,
+ */
+void TCPMessengerClient::createNewRoom(string roomName)
+{
+	//Sends CREATE_NEW_ROOM command to the main server with the room name
+	this->TCPtoServerMessage(roomName,CREATE_NEW_ROOM);
+	//this->roomName= roomName;
+
+}
+/*
+ * Prints the status of the client, connected,in a room, in a session.
+ */
+void  TCPMessengerClient::printClientStatus(){
+	if(this->state==LOGGED_IN){
+		cout<<"You are connected to server as: "<<this->userName<<endl;
+	}
+	else if(this->state==IN_SESSION){
+		cout<<"You are in session with: "<<inSessionWith<<endl;
+	}
+	else
+		cout<<"You are currently not connected to any server"<<endl;
+}
 /**
  * send the given message to the connected peer
  */
