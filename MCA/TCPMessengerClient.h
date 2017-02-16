@@ -11,6 +11,7 @@
 #include <vector>
 #include "MThread.h"
 #include "TCPSocket.h"
+#include "UDPManager.h"
 #include "TCPMessengerProtocol.h"
 
 
@@ -88,9 +89,10 @@ protected:
 	//TCPSocket* clientSock;
 	string inSessionWith;
 	string userName;
-
+	string roomName;
 private:
 	TCPSocket* _mainSocket;
+	UDPManager* udpManager;
 	bool _isActiveSession;
 	bool _isRunning;
 };
