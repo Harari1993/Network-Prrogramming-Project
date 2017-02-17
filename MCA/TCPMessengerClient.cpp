@@ -280,6 +280,20 @@ bool TCPMessengerClient::open(string address) {
 	return isActiveClientSession();
 }
 
+
+void TCPMessengerClient::printData(string data, int numOfIter){
+
+	char* tempCahrFromData = strdup(data.c_str());
+	int i;
+	string dataString = strtok(tempCahrFromData," ");
+	for(i =0; i<numOfIter-1;i++){
+		cout<<i+1<<"."<<dataString<<endl;
+		dataString=strtok(NULL," ");
+	}
+	cout<<i+1<<"."<<dataString<<endl;
+	free(tempCahrFromData);
+}
+
 /**
  * return true if a session is active
  */
@@ -305,17 +319,7 @@ bool TCPMessengerClient::closeActiveSession() {
 }
 
 /*
- * Function that helps send the request to print all the users
- */
-void TCPMessengerClient::printAllUsers(){
-	if(this->state == NOT_CONNECTED) //print all users ONLY when connected
-		cout<<"You are not connected"<<endl;
-	else
-		this->TCPtoServerCommandProtocol(REG_USERS);
-}
-
-/*
- * Function that helps send the request to print all of the connected users
+ * Function that send the request to print all of the connected users
  */
 void TCPMessengerClient::printConnectedUsers()
 {
@@ -328,7 +332,14 @@ void TCPMessengerClient::printConnectedUsers()
 }
 
 /*
- * Helper function that sends messages to server
+ * Sends the request to the server to print all the rooms
+ */
+void TCPMessengerClient::printAllRooms(){
+	this->TCPtoServerCommandProtocol(EXISTED_ROOMS);
+}
+
+/*
+ * Function that sends messages to server
  */
 void TCPMessengerClient::TCPtoServerMessage(string msg,int protocol){
 	this->TCPtoServerCommandProtocol(protocol);
@@ -340,7 +351,7 @@ void TCPMessengerClient::TCPtoServerMessage(string msg,int protocol){
 	_mainSocket->send(msg.c_str(),(msg.length()));
 }
 /*
- * Helper function that sends commands to the server
+ * Function that sends commands to the server
  */
 void TCPMessengerClient::TCPtoServerCommandProtocol(int protocol)
 {
@@ -349,6 +360,7 @@ void TCPMessengerClient::TCPtoServerCommandProtocol(int protocol)
 
 }
 
+// FUnction that send login request to the server
 bool TCPMessengerClient::loginUser(string user,string pass) {
 	if (state == CONNECTED) {
 		string msg = user + " " + pass;
@@ -400,6 +412,36 @@ void TCPMessengerClient::createNewRoom(string roomName)
 	//this->roomName= roomName;
 
 }
+
+void TCPMessengerClient::printAllUsers(){
+	if(this->state == NOT_CONNECTED) //print all users ONLY when connected
+		cout<<"You are not connected"<<endl;
+	else
+		this->TCPtoServerCommandProtocol(REG_USERS);
+}
+
+/*
+ * Sends the request to print all the users in a room
+ */
+void TCPMessengerClient::printAllUsersInRoom(string roomName){
+	if(this->state == NOT_CONNECTED)
+		cout<<"You must be connected"<<endl;
+	else
+		this->TCPtoServerMessage(roomName,USERS_IN_ROOM);
+}
+
+void TCPMessengerClient::leaveCurrentRoom()
+{
+	if(state==IN_ROOM)
+	{
+		this->TCPtoServerMessage(this->roomName,LEAVE_ROOM);
+		this->state=LOGGED_IN;
+		this->roomName="none";
+	}
+	else
+		puts("You're not in a room");
+}
+
 /*
  * Prints the status of the client, connected,in a room, in a session.
  */

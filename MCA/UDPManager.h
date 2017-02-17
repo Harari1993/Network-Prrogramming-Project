@@ -6,6 +6,7 @@
 #include "MThread.h"
 #include <vector>
 #include <stdlib.h>
+#include <string.h>
 
 using namespace std;
 
