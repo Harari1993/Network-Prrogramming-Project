@@ -66,13 +66,13 @@ void Dispatcher::run(){
 		//makes the sockets wait for incoming messages
 		switch(_server->recieveCommandFromTCP(currentUser))
 		{
-			case 2: //OPEN_SESSION_WITH_PEER
+			case OPEN_SESSION_WITH_PEER:
 			{
 				this->openSessionWithPeer(currentUser);
 				break;
 			}
 
-			case 3://JOIN_ROOM: //Receive room name and add user to that room
+			case JOIN_ROOM: //Receive room name and add user to that room
 			{
 				this->joinRoom(currentUser);
 				break;
@@ -84,42 +84,42 @@ void Dispatcher::run(){
 				break;
 			}
 
-			case 12://CREATE_NEW_ROOM
+			case CREATE_NEW_ROOM:
 			{
 				createNewRoom(currentUser);
 				break;
 			}
-			case 18://LEAVE_ROOM
+			case LEAVE_ROOM:
 			{
 				leaveRoom(currentUser);
 				break;
 			}
-			case 19://CLOSE_ROOM_REQUEST
+			case CLOSE_ROOM_REQUEST:
 			{
 				closeRoomRequest(currentUser);
 				break;
 			}
-			case 41: //simple print all connected users//CONNECTED_USERS
+			case CONNECTED_USERS:
 			{
 				getConnectedUsers(currentUser);
 				break;
 			}
-			case 42://USERS_IN_ROOM
+			case USERS_IN_ROOM:
 			{
 				getUsersInRoom(currentUser);
 				break;
 			}
-			case 43://EXISTED_ROOMS
+			case EXISTED_ROOMS:
 			{
 				getExistedRooms(currentUser);
 				break;
 			}
-			case 40://REG_USERS
+			case REG_USERS:
 			{
 				getRegisteredUsers(currentUser);
 				break;
 			}
-			case 26://DISCONNECT
+			case DISCONNECT:
 			{
 				disconnect(currentUser);
 				break;
@@ -149,13 +149,13 @@ void Dispatcher::openSessionWithPeer(TCPSocket* user){
 		//Check the wantedUserName's state
 		int requestPeerCommand = _server->recieveCommandFromTCP(peerToConnect);
 
-		if(requestPeerCommand == 34){//IN_SESSION
-			_server->sendCommandToTCP(29, user);//SESSION_REFUSED_SESSION
+		if(requestPeerCommand == IN_SESSION){
+			_server->sendCommandToTCP(SESSION_REFUSED_SESSION, user);
 		}
-		else if(requestPeerCommand == 35){//IN_ROOM
-			_server->sendCommandToTCP(28,user);//SESSION_REFUSED_ROOM
+		else if(requestPeerCommand == IN_ROOM){
+			_server->sendCommandToTCP(SESSION_REFUSED_ROOM,user);
 		}
-		else if (requestPeerCommand == 33){//LOGGED_IN
+		else if (requestPeerCommand == LOGGED_IN){
 			//Sends SESSION_ESTABLISHED message to the initiator with the UDP settings
 			_server->sendCommandToTCP(SESSION_ESTABLISHED,user);
 			_server->sendMsgToTCP(requested_username+" "+requested_userIP,user);
@@ -184,12 +184,12 @@ void Dispatcher::joinRoom(TCPSocket* user){
 	// If the room is not exist
 	if(roomIndex ==-1){
 		//Sending a failure message in case the room doesnt exist
-		_server->sendCommandToTCP(15,user);//NO_SUCH_ROOM_NAME
+		_server->sendCommandToTCP(NO_SUCH_ROOM_NAME,user);
 	}
 	// If the room exist
 	else{
 		//Sends a command to the client that approves its' joining
-		_server->sendCommandToTCP(16,user);//JOIN_ROOM_ARPROVED
+		_server->sendCommandToTCP(JOIN_ROOM_ARPROVED,user);
 
 		//Sends a message to the client with the room's name
 		_server->sendMsgToTCP(roomName,user);
@@ -201,7 +201,7 @@ void Dispatcher::joinRoom(TCPSocket* user){
 		string userNameToSend = _server->ipToName(user->getIpAndPort());
 
 		//Informs all users in the room that the new user has been joined
-		_server->sendMsgToAllUsersInRoom(3,roomName,userNameToSend);//JOIN_ROOM
+		_server->sendMsgToAllUsersInRoom(JOIN_ROOM,roomName,userNameToSend);
 	}
 }
 
@@ -236,7 +236,7 @@ void Dispatcher::createNewRoom(TCPSocket* user){
 	//Check if that roomName already exists
 	if(_server->getRoomIndex(roomName) != -1){
 		//There is already a room with that name. Sends ROOM_NOT_UNIQUE message to currentUser
-		_server->sendCommandToTCP(13,user);//ROOM_NOT_UNIQUE
+		_server->sendCommandToTCP(ROOM_NAME_EXISTS,user);
 	}
 	else{
 		//roomName is available, defines a owner (currentUser)
@@ -246,7 +246,7 @@ void Dispatcher::createNewRoom(TCPSocket* user){
 		_server->getRooms().push_back(new Room(roomName,user->getIpAndPort(),owner));
 
 		//Sends CREATE_ROOM_APPROVED command to owner
-		_server->sendCommandToTCP(14,user);//CREATE_ROOM_APPROVED
+		_server->sendCommandToTCP(CREATE_ROOM_APPROVED,user);
 	}
 }
 
@@ -262,8 +262,8 @@ void Dispatcher::leaveRoom(TCPSocket* user){
 	string tempNameFromIp= _server->ipToName(user->getIpAndPort());
 
 	//Sends a message to all users in the room that that user has been removed from the room
-	_server->sendMsgToAllUsersInRoom(18,roomNametoLeave,tempNameFromIp);//LEAVE_ROOM
-	_server->sendCommandToTCP(61, user);//LEFT_ROOM
+	_server->sendMsgToAllUsersInRoom(LEAVE_ROOM,roomNametoLeave,tempNameFromIp);
+	_server->sendCommandToTCP(LEFT_ROOM, user);
 }
 
 void Dispatcher::closeRoomRequest(TCPSocket* user){
@@ -276,7 +276,7 @@ void Dispatcher::closeRoomRequest(TCPSocket* user){
 
 	// If it's not the owner
 	if(userName != ownerName){
-		_server->sendCommandToTCP(21,user);//CLOSE_ROOM_DENIED
+		_server->sendCommandToTCP(CLOSE_ROOM_DENIED,user);
 	}
 	// If it's the owner
 	else{
@@ -285,7 +285,7 @@ void Dispatcher::closeRoomRequest(TCPSocket* user){
 		{
 			string tempIptoSendClose = this->_server->getRooms().at(roomIndex)->getUsersInRoom().at(i);
 			int userIndex = _server->getSocketIndex(_server->getOpenPeerVector(), tempIptoSendClose);
-			_server->sendCommandToTCP(20,_server->getOpenPeerVector().at(userIndex));//ROOM_CLOSED
+			_server->sendCommandToTCP(ROOM_CLOSED,_server->getOpenPeerVector().at(userIndex));
 
 		}
 		//Remove the room from Rooms Vector
@@ -312,7 +312,7 @@ void Dispatcher::getConnectedUsers(TCPSocket* user){
 
 	if(numberOfUsers > 0)
 	{
-		_server->sendCommandToTCP(22,user);//PRINT_DATA_FROM_SERVER
+		_server->sendCommandToTCP(PRINT_DATA_FROM_SERVER,user);
 		_server->sendCommandToTCP(numberOfUsers,user);
 		_server->sendMsgToTCP(usersName,user);
 	}
@@ -326,7 +326,7 @@ void Dispatcher::getUsersInRoom(TCPSocket* user){
 
 	if(roomIndex == -1){
 		//roomName was not found in Room's vector
-		_server->sendCommandToTCP(15,user);//NO_SUCH_ROOM_NAME
+		_server->sendCommandToTCP(NO_SUCH_ROOM_NAME,user);
 	}
 	else{
 		string usersName;
@@ -345,7 +345,7 @@ void Dispatcher::getUsersInRoom(TCPSocket* user){
 				usersName.append(" ");
 		}
 
-		_server->sendCommandToTCP(22,user);//PRINT_DATA_FROM_SERVER
+		_server->sendCommandToTCP(PRINT_DATA_FROM_SERVER,user);
 		//Sends the numOfUsersInRoom as numOfIter
 		_server->sendCommandToTCP(numOfUsersInRoom,user);
 		_server->sendMsgToTCP(usersName,user);
@@ -370,13 +370,13 @@ void Dispatcher::getExistedRooms(TCPSocket* user){
 	}
 	if(numOfRoom > 0)
 	{
-		_server->sendCommandToTCP(22,user);//PRINT_DATA_FROM_SERVER
+		_server->sendCommandToTCP(PRINT_DATA_FROM_SERVER,user);
 		//Sends the numOfRoom as numOfIter
 		_server->sendCommandToTCP(numOfRoom,user);
 		_server->sendMsgToTCP(rooms,user);
 	}
 	else{
-		_server->sendCommandToTCP(60, user);//NO_ROOMS
+		_server->sendCommandToTCP(NO_ROOMS, user);
 	}
 }
 
@@ -397,7 +397,7 @@ void Dispatcher::getRegisteredUsers(TCPSocket* user){
 
 	if (numOfUsers>0)
 	{
-		_server->sendCommandToTCP(22,user);//PRINT_DATA_FROM_SERVER
+		_server->sendCommandToTCP(PRINT_DATA_FROM_SERVER,user);
 
 		//Sends the numOfRoom as numOfIter
 		_server->sendCommandToTCP(numOfUsers,user);
@@ -405,7 +405,7 @@ void Dispatcher::getRegisteredUsers(TCPSocket* user){
 	}
 	else
 	{
-		_server->sendCommandToTCP(62, user);//NO_USERS
+		_server->sendCommandToTCP(NO_USERS, user);
 	}
 }
 

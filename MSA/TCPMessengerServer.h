@@ -58,7 +58,7 @@ public:
 	//	void ListSessions();
 		int getRoomIndex(string roomName);
 	//	void printUserinRoom(string name);
-	//	string UsersInRoomToString(string roomName);
+		string usersInRoomToString(string roomName);
 		void sendMsgToAllUsersInRoom(int msgType,string roomName, string userName);
 		vector<string> getUserNamesFromFile();
 	//	void printAllUsers();

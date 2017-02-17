@@ -62,62 +62,65 @@ vector<string> TCPMessengerServer::getIpToClientName(){
 // */
 void TCPMessengerServer::sendMsgToAllUsersInRoom(int msgType,string roomName, string userName)
 {
-//	int userIndex;
-//	int roomIndex = this->getRoomIndex(roomName);
-//	//This loop is runs on all users in the room and informs if a user has joined or left the room
-//	for(unsigned int i=0;i<this->_rooms.at(roomIndex)->usersInRoom.size();i++)
-//	{
-//		string tempIPtosend = _room.at(roomIndex)->usersInRoom.at(i);
-//		userIndex=this->getSocketIndex(_openPeerVector, tempIPtosend);
-//		this->sendCommandToTCP(ROOM_STATUS_CHANGED,this->_openPeerVector.at(userIndex));
-//		switch(msgType)
-//		{
-//			case JOIN_ROOM:
-//			{
-//				//Informs all users about the new user who joined the room
-//				string tempMsg = userName;
-//				tempMsg.append(" Has Joined the room");
-//				int numOfUsers = _rooms.at(roomIndex)->countUsers();
-//				this->sendMsgToTCP(tempMsg,this->_openPeerVector.at(userIndex));
-//				this->sendCommandToTCP(numOfUsers,this->_openPeerVector.at(userIndex));
-//				string usersVectorString = this->usersInRoomToString(roomName);
-//				//Sends the updated users list to all peers in the roomName
-//				this->sendMsgToTCP(usersVectorString,this->_openPeerVector.at(userIndex));
-//				break;
-//			}
-//			case LEAVE_ROOM:
-//			{
-//				//Informs all users about the user that left
-//				string tempMsg = userName;
-//				tempMsg.append(" Has Left the room");
-//				int numOfUsers =_room.at(roomIndex)->countUsers();
-//				this->sendMsgToTCP(tempMsg,this->_openPeerVector.at(userIndex));
-//				this->sendCommandToTCP(numOfUsers,this->_openPeerVector.at(userIndex));
-//				string usersVectorString = this->usersInRoomToString(roomName);
-//				//Sends the updated users list to all peers in the roomName
-//				this->sendMsgToTCP(usersVectorString,this->_openPeerVector.at(userIndex));
-//				break;
-//			}
-//		}
-//	}
+	int userIndex;
+	int roomIndex = this->getRoomIndex(roomName);
+	//This loop is runs on all users in the room and informs if a user has joined or left the room
+	for(unsigned int i=0;i<this->_rooms.at(roomIndex)->getUsersInRoom().size();i++)
+	{
+		string tempIPtosend = _rooms.at(roomIndex)->getUsersInRoom().at(i);
+		userIndex=this->getSocketIndex(_openPeerVector, tempIPtosend);
+		this->sendCommandToTCP(ROOM_STATUS_CHANGED,this->_openPeerVector.at(userIndex));
+		switch(msgType)
+		{
+			case JOIN_ROOM:
+			{
+				//Informs all users about the new user who joined the room
+				string tempMsg = userName;
+				tempMsg.append(" Has Joined the room");
+
+				int numOfUsers = _rooms.at(roomIndex)->getUsersInRoom().size();
+				this->sendMsgToTCP(tempMsg,this->_openPeerVector.at(userIndex));
+				this->sendCommandToTCP(numOfUsers,this->_openPeerVector.at(userIndex));
+				string usersVectorString = this->usersInRoomToString(roomName);
+
+				//Sends the updated users list to all peers in the roomName
+				this->sendMsgToTCP(usersVectorString,this->_openPeerVector.at(userIndex));
+				break;
+			}
+			case LEAVE_ROOM:
+			{
+				//Informs all users about the user that left
+				string tempMsg = userName;
+				tempMsg.append(" Has Left the room");
+				int numOfUsers =_rooms.at(roomIndex)->getUsersInRoom().size();
+				this->sendMsgToTCP(tempMsg,this->_openPeerVector.at(userIndex));
+				this->sendCommandToTCP(numOfUsers,this->_openPeerVector.at(userIndex));
+				string usersVectorString = this->usersInRoomToString(roomName);
+
+				//Sends the updated users list to all peers in the roomName
+				this->sendMsgToTCP(usersVectorString,this->_openPeerVector.at(userIndex));
+				break;
+			}
+		}
+	}
 }
-//
-///*
-// * Simple function that returns the names of the users in the room in a string
-// */
-//string TCPMessengerServer::UsersInRoomToString(string roomName)
-//{
-//	string tempIp;
-//	int roomIndex = this->findInRooms(roomName);
-//	for(unsigned int i=0;i<this->Rooms.at(roomIndex)->usersInRoom.size();i++)
-//	{
-//		tempIp.append(this->Rooms.at(roomIndex)->usersInRoom.at(i));
-//		if(i!=this->Rooms.at(roomIndex)->usersInRoom.size()-1)
-//			tempIp.append(" ");
-//	}
-//
-//	return tempIp;
-//}
+
+/*
+ * Simple function that returns the names of the users in the room in a string
+ */
+string TCPMessengerServer::usersInRoomToString(string roomName)
+{
+	string tempIp;
+	int roomIndex = this->getRoomIndex(roomName);
+	for(unsigned int i=0;i<this->_rooms.at(roomIndex)->getUsersInRoom().size();i++)
+	{
+		tempIp.append(this->_rooms.at(roomIndex)->getUsersInRoom().at(i));
+		if(i!=this->_rooms.at(roomIndex)->getUsersInRoom().size()-1)
+			tempIp.append(" ");
+	}
+
+	return tempIp;
+}
 //
 //
 //void TCPMessengerServer::PrintOpenPeerVector()
