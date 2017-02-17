@@ -26,7 +26,7 @@ class TCPSocket {
 	//TODO: declare class properties
 
 private:
-	int _socket;
+	int _socket_fd; //fd will typically be the socket file descriptor of a network connection
 	sockaddr_in _serverAddr;
 	sockaddr_in _peerAddr;
 
@@ -46,6 +46,13 @@ public:
 	 * Constructor creates TCP client socket
 	 */
 	TCPSocket(string peerIp, int port);
+
+	/*
+	 * Get the socket
+	 */
+	int getSocketFd();
+
+
 	/**
 	 * Perform listen and accept on server socket
 	 */
@@ -71,6 +78,11 @@ public:
 	 * return the address of the connected peer
 	 */
 	string fromAddr();
+
+	/*
+	 * Return ip and port concatenate
+	 */
+	string getIpAndPort();
 };
 
 #endif

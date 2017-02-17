@@ -1,10 +1,39 @@
-//Chat rooms (conference chat):
-// ○ The client is able to open a chat room.
-// ○ A chat room may be closed only by its creator.
-// ○ Each client can enter a chat room or leave it.
-// ○ Once a client enters a chat room it will receive all messages sent
-//   by all the other clients in the room, and all the clients will
-//   receive his messages.
-// ○ In order not to overload the server, all client communication is
-//   P2P using UDP and does not pass through the server.
+#include "Room.h"
 
+/*
+ * A constructor for a room, stores the name of the room, the hosts ip and port and the name of the host
+ */
+Room::Room(string roomName,string hostIp_Port,string roomHostName) {
+	this->_roomName=roomName;
+	//hostName=roomHostName;
+	//this->hostIp_Port=hostIp_Port;
+	//AddUserToRoom(this->hostIp_Port);
+	cout<<"The Room ["<<roomName<<"] Has been Created"<<endl;
+}
+
+Room::~Room(){};
+
+string Room::getRoomName(){
+	return _roomName;
+}
+
+string Room::getHostName(){
+	return _hostName;
+}
+
+vector<string> Room::getUsersInRoom(){
+	return _usersInRoom;
+}
+
+void Room::addUserToRoom(string user){
+	_usersInRoom.push_back(user);
+}
+
+void Room::removeUserFromRoom(string user){
+	for (int i = 0; i < _usersInRoom.size(); i++){
+		if (_usersInRoom.at(i) == user){
+			_usersInRoom.erase(_usersInRoom.begin() + i);
+			break;
+		}
+	}
+}

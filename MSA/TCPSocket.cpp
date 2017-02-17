@@ -20,15 +20,15 @@ using namespace std;
 TCPSocket::TCPSocket(int connected_sock, struct sockaddr_in serverAddr,
 		struct sockaddr_in peerAddr) {
 	//initialize local class properties
-	_socket = connected_sock;
+	_socket_fd = connected_sock;
 	_serverAddr = serverAddr;
 	_peerAddr = peerAddr;
 }
 
 TCPSocket::TCPSocket(int port) {
 	// open TCP socket
-	_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_socket < 0) {
+	_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_socket_fd < 0) {
 		perror("Error opening channel");
 	}
 
@@ -39,7 +39,7 @@ TCPSocket::TCPSocket(int port) {
 	serv_name.sin_port = htons(port);
 
 	// bind the socket to the address
-	if (bind(_socket, (struct sockaddr *) &serv_name, sizeof(serv_name)) < 0) {
+	if (bind(_socket_fd, (struct sockaddr *) &serv_name, sizeof(serv_name)) < 0) {
 		perror("Error naming channel");
 	}
 
@@ -49,8 +49,8 @@ TCPSocket::TCPSocket(int port) {
 
 TCPSocket::TCPSocket(string peerIp, int port) {
 	// open TCP socket
-	_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_socket < 0) {
+	_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_socket_fd < 0) {
 		perror("Error opening channel");
 	}
 
@@ -61,21 +61,25 @@ TCPSocket::TCPSocket(string peerIp, int port) {
 	_peerAddr.sin_port = htons(port);
 
 	// connect the socket to the peer server
-	if (connect(_socket, (sockaddr *) &_peerAddr, sizeof(_peerAddr)) < 0) {
+	if (connect(_socket_fd, (sockaddr *) &_peerAddr, sizeof(_peerAddr)) < 0) {
 		perror("Error establishing communications");
-		close(_socket);
+		close(_socket_fd);
 	}
+}
+
+int TCPSocket::getSocketFd(){
+	return _socket_fd;
 }
 
 TCPSocket* TCPSocket::listenAndAccept() {
 	// listen on the socket
-	if (listen(_socket, 1) < 0) {
+	if (listen(_socket_fd, 1) < 0) {
 		return NULL;
 	}
 
 	// call accept on the socket
 	size_t len = sizeof(_peerAddr);
-	int connect_sock = accept(_socket, (sockaddr *) &_peerAddr,
+	int connect_sock = accept(_socket_fd, (sockaddr *) &_peerAddr,
 			(socklen_t*) &len);
 
 	// return new TCPSocket object holding the new secondary server socket returned from the accept call
@@ -84,25 +88,39 @@ TCPSocket* TCPSocket::listenAndAccept() {
 
 int TCPSocket::recv(char* buffer, int length) {
 	// read from the socket
-	int byteRead = read(_socket, buffer, length);
+	int byteRead = read(_socket_fd, buffer, length);
 
 	return byteRead;
 }
 
 int TCPSocket::send(const char* msg, int len) {
-	int byteWrite = write(_socket, msg, len);
+	int byteWrite = write(_socket_fd, msg, len);
 
 	return byteWrite;
 }
 
 void TCPSocket::cclose() {
 	// shutdown and close the socket
-	shutdown(_socket, 0);
-	close(_socket);
+	shutdown(_socket_fd, 0);
+	close(_socket_fd);
 }
 
 string TCPSocket::fromAddr() {
 	// return the session destination peer address
 	char* lastAddr = inet_ntoa(_peerAddr.sin_addr);
 	return string(lastAddr);
+}
+
+string TCPSocket::getIpAndPort(){
+	// Convert IP addresses to string
+	string str = inet_ntoa(_peerAddr.sin_addr);
+
+	str.append(";");
+	char buff[10];
+
+	// Convert port to string
+	sprintf(buff,"%d",ntohs(_peerAddr.sin_port));
+	str.append(buff);
+
+	return str;
 }
