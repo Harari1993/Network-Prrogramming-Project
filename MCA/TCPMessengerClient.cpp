@@ -13,46 +13,207 @@ TCPMessengerClient::TCPMessengerClient() {
 	_mainSocket = NULL;
 	_isActiveSession = false;
 	_isRunning = false;
+	udpManager = NULL;
+	this->state= NOT_CONNECTED;
+	this->roomName = "none";
+	this->userName = "none";
 }
 
 void TCPMessengerClient::run() {
 	_isRunning = true;
+
+	// Temp structure to hold date recieved from socket
+	char* buffer =new char[1024];
 
 	do {
 		int command = readCommand();
 		if (command < 1 || command > 6) {
 			continue;
 		}
-
+		bzero(buffer,1024);
 		string message;
 		switch (command) {
-			case SEND_MSG_TO_PEER:
-				message = readDataFromPeer();
-				cout << ">>" << message << endl;
-				break;
-			case CLOSE_SESSION_WITH_PEER:
-				cout << "Session was closed by remote peer" << endl;
-				_isActiveSession = false;
-				break;
-			case OPEN_SESSION_WITH_PEER:
-				cout << "Session was opened by remote peer " << readDataFromPeer() << endl;
-				_isActiveSession = true;
-				break;
-			case SESSION_ESTABLISHED:
+			case SESSION_ESTABLISHED: {
 				cout << "Session was established with remote peer" << endl;
 				_isActiveSession = true;
+				int msgLen;
+				_mainSocket->recv((char*)&msgLen,4);
+				msgLen = ntohl(msgLen);
+				_mainSocket->recv(buffer, msgLen);
+				cout<<"connected to "<<buffer<<endl;
+				//Opens UDP session with another user
+				if (udpManager != NULL){
+					udpManager->setDestinationMessage(strtok(NULL, " "));
+				}
+				inSessionWith = strtok(buffer, " ");
+				state=IN_SESSION;
 				break;
-			default:
-				cout << "Communication with server was interrupted - connection closed" << endl;
-				disconnect();
-				_isRunning = false;
+			}
+			case SESSION_REFUSED:{
+				puts("Could not Open Session - The user is not found or disconnected");
 				break;
+			}
+			case SESSION_REFUSED_ROOM:{
+				puts("Could not Open Session - The user is in a room");
+				break;
+			}
+			case CLOSE_SESSION_WITH_PEER:{
+				puts("Your Session was disconnected");
+				state = LOGGED_IN;
+				inSessionWith="none";
+				break;
+			}
+			case SESSION_REFUSED_SESSION:{
+				puts("Could not Open Session - The user is in session with another user");
+				break;
+			}
+			case OPEN_SESSION_WITH_PEER:{
+				TCPtoServerCommandProtocol(state);
+				break;
+			}
+			case LOGIN_ERROR_RESPONSE:{
+				puts("Login error");
+				userName="none";
+				break;
+			}
+			case LOGIN_APPROVE_RESPONSE:{
+				//Server approved login, waiting for UDPManager settings
+				int msgLen;
+				_mainSocket->recv((char*)&msgLen,4);
+				msgLen = ntohl(msgLen);
+				_mainSocket->recv(buffer, msgLen);
+
+				//Sets UDPManager
+				udpManager = new UDPManager(userName,buffer);
+				//Start listening on UDP
+				udpManager->start();
+				state = LOGGED_IN;
+				cout<<"Connected to server as "<<userName<<endl;
+				break;
+			}
+			case ROOM_NAME_EXISTS:{
+				this->roomName="none";
+				puts("Room name already exists! please choose another room name");
+				break;
+			}
+			case CREATE_ROOM_APPROVED:{
+				this->state= IN_ROOM;
+				puts("Room created");
+				break;
+			}
+			case JOIN_ROOM_ARPROVED: {
+				int msgLen;
+				_mainSocket->recv((char*)&msgLen,4);
+				msgLen = ntohl(msgLen);
+				_mainSocket->recv(buffer, msgLen);
+				cout<<"You have been joined to room: "<<buffer<<endl;
+				this->state = IN_ROOM;
+				this->roomName = buffer;
+				break;
+			}
+			case NO_SUCH_ROOM_NAME:{
+				puts("no room with such name");
+				break;
+			}
+			case ROOM_STATUS_CHANGED:{ //update room members
+				int msgLen1;
+				_mainSocket->recv((char*)&msgLen1,4);
+				msgLen1 = ntohl(msgLen1);
+				_mainSocket->recv(buffer, msgLen1);
+				cout<<buffer<<endl;
+
+				int numofUsersInString;
+				_mainSocket->recv((char*)&numofUsersInString,4);
+				numofUsersInString = ntohl(numofUsersInString);
+
+				bzero(buffer,1024);
+
+				int msgLen2;
+				_mainSocket->recv((char*)&msgLen2,4);
+				msgLen2 = ntohl(msgLen2);
+				_mainSocket->recv(buffer, msgLen2);
+
+				udpManager->listOfUsersInRoom.clear();
+				string tempUserInRoom = strtok(buffer," ");
+
+				for(int i =0; i<numofUsersInString-1;i++){
+					udpManager->listOfUsersInRoom.push_back(tempUserInRoom);
+					tempUserInRoom=strtok(NULL," ");
+				}
+
+				udpManager->listOfUsersInRoom.push_back(tempUserInRoom);
+				break;
+			}
+			case CLOSE_ROOM_DENIED:{
+				puts("You're not allowed to close this room");
+				break;
+			}
+			case ROOM_CLOSED:{
+				puts("Your room was closed by its owner");
+				//Cleans my saved users list in that room (UDPManager)
+				udpManager->listOfUsersInRoom.clear();
+				this->state=LOGGED_IN;
+				this->roomName="none";
+				break;
+			}
+			case NO_ROOMS:{
+				cout<<"No rooms opened on server for now."<<endl;
+				break;
+			}
+			case NO_USERS:{
+				cout<<"No users have been registered to the server."<<endl;
+				break;
+			}
+			case LEFT_ROOM:{
+				puts("You have left the room");
+				break;
+			}
+			case PRINT_DATA_FROM_SERVER:{
+				int numOfIter;
+				_mainSocket->recv((char*)&numOfIter,4);
+				numOfIter = ntohl(numOfIter);
+
+				int msgLen;
+				_mainSocket->recv((char*)&msgLen,4);
+				msgLen = ntohl(msgLen);
+				_mainSocket->recv(buffer, msgLen);
+
+				this->printData(buffer,numOfIter);
+				break;
+			}
+			case NEW_USER_DENIED:{
+				puts(" Failed - User name already exists");
+				break;
+			}
+			case NEW_USER_APPROVED:{
+				puts("User registered");
+				break;
+			}
+			case SERVER_DISCONNECT:{
+				puts("server closed");
+				if(state==IN_ROOM)
+				{
+					this->leaveCurrentRoom();
+				}
+				if(state==IN_SESSION)
+				{
+					this->closeActiveSession();
+				}
+				system("sleep 1");
+				_isRunning=false;
+				_isActiveSession=false;
+				this->udpManager->running=false;
+					_mainSocket->cclose();
+				this->state=NOT_CONNECTED;
+
+				break;
+			}
 		}
 	} while (_isRunning);
 }
 
 /**
- * connect to the given server ip (the port is defined in the protocol header file)
+ * Connect to the given server ip (the port is defined in the protocol header file)
  */
 bool TCPMessengerClient::connect(string ip) {
 	if (isConnected()) {
@@ -71,14 +232,14 @@ bool TCPMessengerClient::connect(string ip) {
 }
 
 /**
- * return true if connected to the server
+ * Return true if connected to the server
  */
 bool TCPMessengerClient::isConnected() {
 	return _mainSocket != NULL;
 }
 
 /**
- * disconnect from messenger server
+ * Disconnect from messenger server
  */
 bool TCPMessengerClient::disconnect() {
 	if (_isRunning) {
