@@ -23,6 +23,8 @@ int main(){
     cout<<"Welcome to our messenger Server!"<<endl;
     printMenu();
 
+    TCPMessengerServer* server = new TCPMessengerServer();
+
     // TODO:
     // 1. Implement the main loop of the Server
     // 2. Create a TCPMessengerServer 
