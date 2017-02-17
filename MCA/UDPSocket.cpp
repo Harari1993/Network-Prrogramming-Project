@@ -13,9 +13,9 @@
 #include <unistd.h>
 #include <string.h>
 
-using namespace npl;
-
 UDPSocket::UDPSocket(int port){
+	// creates a UDP socket, AF_INET - IPv4 Internet protocols
+	// SOCK_DGRAM - UDP, 0 - default protocol type fo UDP
 	socket_fd = socket (AF_INET, SOCK_DGRAM, 0);
 	if(port != 9999){
 		struct sockaddr_in  s_in;
@@ -24,6 +24,7 @@ UDPSocket::UDPSocket(int port){
 		s_in.sin_addr.s_addr = htonl(INADDR_ANY);    /* WILDCARD any system ip*/
 		s_in.sin_port = htons(port);
 
+		//bind the socket on the specified address
 		if (bind(socket_fd, (struct sockaddr *)&s_in, sizeof(s_in))<0){
 			cout<<"Error naming channel"<<endl;
 		}
@@ -36,6 +37,7 @@ int UDPSocket::recv(char* buffer, int length){
 	int rc = recvfrom(socket_fd, buffer, length, 0,(sockaddr*)&from,&fromSize);
 	return rc;
 }
+
 
 int UDPSocket::sendTo(const string& msg,const string& ip, int port){
 	struct sockaddr_in  s_in;
@@ -55,7 +57,7 @@ int UDPSocket::reply(const string& msg){
 	return rc;
 }
 
-void UDPSocket::close(){
+void UDPSocket::cclose(){
 	cout<<"closing socket"<<endl;
 	shutdown(socket_fd,SHUT_RDWR);
 	::close(socket_fd);

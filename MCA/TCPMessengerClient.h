@@ -1,6 +1,6 @@
 //============================================================================
 // Name        : TCP Messenger Server
-// Author      : Liel Cohen & Ben Grynhaus
+// Author      : Danielle Cohen & Amit Harari
 // Date		   : 2/12/2015
 // Version     :
 // Copyright   :
@@ -11,6 +11,7 @@
 #include <vector>
 #include "MThread.h"
 #include "TCPSocket.h"
+#include "UDPManager.h"
 #include "TCPMessengerProtocol.h"
 
 
@@ -64,15 +65,34 @@ public:
 	bool send(string msg);
 
 	void run();
+	void TCPtoServerMessage(string msg,int protocol);
+	void TCPtoServerCommandProtocol(int protocol);
+	void printAllUsersInRoom(string roomName);
+	void printAllRooms();
+	void printConnectedUsers();
+	void printAllUsers();
+	void printData(string data, int numOfIter);
+	bool loginUser(string user,string pass);
+	bool registerUser(string user,string pass);
+	void createNewRoom(string roomName);
+	void leaveCurrentRoom();
+	void printClientStatus();
+	void closeRoom(string roomName);
+
 
 protected:
 	bool sendCommand(int command);
 	bool sendData(string message);
 	int readCommand();
 	string readDataFromPeer();
-
+	int state;
+	//TCPSocket* clientSock;
+	string inSessionWith;
+	string userName;
+	string roomName;
 private:
 	TCPSocket* _mainSocket;
+	UDPManager* udpManager;
 	bool _isActiveSession;
 	bool _isRunning;
 };

@@ -1,31 +1,29 @@
-//============================================================================
-// Name        : UDPMessenger.h
-// Author      : Eliav Menachi
-// Version     :
-// Copyright   : Your copyright notice
-// Description : UDP Messenger application
-//============================================================================
+#ifndef UDPMANAGER_H_
+#define UDPMANAGER_H_
 
 #include <pthread.h>
 #include "UDPSocket.h"
 #include "MThread.h"
+#include <vector>
+#include <stdlib.h>
 
 using namespace std;
-namespace npl{
 
-
-class UDPMessenger: public MThread{
-	static const int MSNGR_PORT = 3344;
+class UDPManager: public MThread{
 	UDPSocket* udpSocket;
-	bool running;
+	string destIp;
+	string destPort;
+	string myUserName;
 
 public:
-	UDPMessenger();
+	bool running;
+	vector<string> listOfUsersInRoom;
+	UDPManager(string myUserName, string myIpandPort);
 
 	/**
 	 * sends the given message to the given peer specified by IP
 	 */
-	void sendTo(const string& msg,const string& ip);
+	void sendToPeer(string msg);
 
 	/**
 	 * reply to an incoming message, this method will send the given message
@@ -44,5 +42,9 @@ public:
 	 * The thread should exist when the socket is closed
 	 */
 	void run();
+
+	void setDestinationMessage(string dest);
+	void sendToRoom(string msg);
 };
-}
+
+#endif /* UDPMANAGER_H_ */
