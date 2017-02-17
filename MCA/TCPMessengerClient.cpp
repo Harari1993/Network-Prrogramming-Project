@@ -216,19 +216,16 @@ void TCPMessengerClient::run() {
  * Connect to the given server ip (the port is defined in the protocol header file)
  */
 bool TCPMessengerClient::connect(string ip) {
-	if (isConnected()) {
-		disconnect();
-	}
-
-	if (ip.find(":") != string::npos) {
-		cout << "Invalid server IP format" << endl;
+	//First we check if the user is already connected
+	if (state == NOT_CONNECTED) {
+		_mainSocket = new TCPSocket(ip,MSNGR_PORT);
+		start();
+		state = CONNECTED;
+		return true;
+	} else {
+		puts("Connection already opened");
 		return false;
 	}
-
-	_mainSocket = new TCPSocket(ip, MSNGR_PORT);
-	start();
-
-	return isConnected();
 }
 
 /**
@@ -261,7 +258,7 @@ bool TCPMessengerClient::disconnect() {
 }
 
 /**
- * open session with the given peer address (ip:port)
+ * Open session with the given peer address (ip:port)
  */
 bool TCPMessengerClient::open(string address) {
 	if (isActiveClientSession()) {
@@ -302,7 +299,7 @@ bool TCPMessengerClient::isActiveClientSession() {
 }
 
 /**
- * close active session
+ * Close active session
  */
 bool TCPMessengerClient::closeActiveSession() {
 	if (!isConnected()) {
@@ -335,7 +332,11 @@ void TCPMessengerClient::printConnectedUsers()
  * Sends the request to the server to print all the rooms
  */
 void TCPMessengerClient::printAllRooms(){
-	this->TCPtoServerCommandProtocol(EXISTED_ROOMS);
+	//print all connected users ONLY when connected
+	if(this->state == NOT_CONNECTED)
+		cout<<"You are not connected"<<endl;
+	else
+		this->TCPtoServerCommandProtocol(EXISTED_ROOMS);
 }
 
 /*
@@ -351,13 +352,12 @@ void TCPMessengerClient::TCPtoServerMessage(string msg,int protocol){
 	_mainSocket->send(msg.c_str(),(msg.length()));
 }
 /*
- * Function that sends commands to the server
+ * This function send to server the protocol of the next message
  */
 void TCPMessengerClient::TCPtoServerCommandProtocol(int protocol)
 {
 	int command = htonl(protocol);
 	_mainSocket->send((char*)&command,4);
-
 }
 
 // FUnction that send login request to the server

@@ -47,6 +47,7 @@ void TCPMessengerServer::run(){
 	_dispatcher->start();
 	_login->start();
 
+	cout<< "TCPMessengerServer"<<endl;
 	while (true) {
 		//Waits for incoming clients connection
 		TCPSocket* tmpTCP= _serverSocket->listenAndAccept();

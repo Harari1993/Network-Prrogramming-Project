@@ -13,6 +13,8 @@ Login::Login(TCPMessengerServer* server){
 Login::~Login(){};
 
 void Login::run(){
+	cout<< "Login"<<endl;
+
 	while (_isOn) {
 //		string buffer;
 		//initialize multiple socket listener

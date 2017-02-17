@@ -16,22 +16,22 @@ using namespace std;
 
 void printInstructions() {
 	cout << "Welcome to TCP messenger" << endl;
-	cout << "To open connect to server type: c <server ip>" << endl;
-	cout << "To print the user list from the server: lu" << endl;
-	cout << "To print the connected users list: lcu" << endl;
-	cout << "To print all rooms: lr" << endl;
-	cout << "To print all users in this room: lru <room name>" << endl;
-	cout << "To login with the user and password: login <user> <password>" << endl;
-	cout << "To register new user with given password: register <user> <password>" << endl;
-	cout << "To open a session with the user: o <username>" << endl;
-	cout << "To enter a chat room: or <room name>" << endl;
+	cout << "To open connect to server type: 						 c <server ip>" << endl;
+	cout << "To print the user list from the server type: 			 lu" << endl;
+	cout << "To print the connected users list type: 				 lcu" << endl;
+	cout << "To print all rooms type: 								 lr" << endl;
+	cout << "To print all users in this room type: 					 lru <room name>" << endl;
+	cout <<	"To login with the user and password type: 				 login <user> <password>" << endl;
+	cout << "To register new user with given password type:          register <user> <password>" << endl;
+	cout << "To open a session with the user type: 					 o <username>" << endl;
+	cout << "To enter a chat room type:                              or <room name>" << endl;
 	cout << "Opening session will close any previously active sessions" << endl;
-	cout << "After the session is opened, to send message type: s <message>" << endl;
-	cout << "To print the current status of the client : l" << endl;
-	cout << "To close opened session: cs" << endl;
-	cout << "To close a room: cr <room name>" << endl;
-	cout << "To disconnect from server: d" << endl;
-	cout << "To close the app: x" << endl;
+	cout << "After the session is opened, to send message type type: s <message>" << endl;
+	cout << "To print the current status of the client type:         l" << endl;
+	cout << "To close opened session type:                           cs" << endl;
+	cout << "To close a room type:                                   cr <room name>" << endl;
+	cout << "To disconnect from server type:                         d" << endl;
+	cout << "To close the app type:                                  x" << endl;
 }
 
 

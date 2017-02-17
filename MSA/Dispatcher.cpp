@@ -16,7 +16,7 @@ using namespace std;
 /*
  * The constructor recieves the TCPMessengerServer
  */
-Dispatcher::Dispatcher(TCPMessengerServer* tcpMS){
+Dispatcher::Dispatcher(TCPMessengerServer* tcpMS): MThread(){
 	_listener = NULL;
 	_server = tcpMS;
 	_isON = true;
