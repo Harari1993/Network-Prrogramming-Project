@@ -11,7 +11,7 @@ TCPMessengerServer::TCPMessengerServer(){
 	//posInVec=0; //<----
 	_serverSocket = new TCPSocket(MSNGR_PORT);
 	_dispatcher = new Dispatcher(this);
-	//myLoginManager = new LoginManager(this);
+	_login = new Login(this);
 	this->start();
 }
 
@@ -38,25 +38,24 @@ vector<string> TCPMessengerServer::getIpToClientName(){
 }
 
 
-///*
-// * The servers main loop
-// */
-//void TCPMessengerServer::run(){
-//
-//	//Starts the dispatcher
-//	myDis->start();
-//	myLoginManager->start();
-//
-//	while (true) {
-//		//Waits for incoming clients connection
-//		TCPSocket* tmpTCP= serverSock->listenAndAccept();
-//		if (tmpTCP != NULL) {
-//			connectedSocketsVect.push_back(tmpTCP);
-//			//insertToOpenVector(tmpTCP);
-//		}
-//	}
-//
-//}
+/*
+ * The servers main loop
+ */
+void TCPMessengerServer::run(){
+
+	//Starts the dispatcher
+	_dispatcher->start();
+	_login->start();
+
+	while (true) {
+		//Waits for incoming clients connection
+		TCPSocket* tmpTCP= _serverSocket->listenAndAccept();
+		if (tmpTCP != NULL) {
+			_openPeerVector.push_back(tmpTCP);
+			//insertToOpenVector(tmpTCP);
+		}
+	}
+}
 ///*
 // *This forwards messages to all the users in a room
 // */

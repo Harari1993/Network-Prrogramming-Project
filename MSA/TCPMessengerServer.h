@@ -8,8 +8,10 @@ using namespace std;
 #include "TCPSocket.h"
 #include "Dispatcher.h"
 #include "Room.h"
+#include "Login.h"
 
 class Dispatcher;
+class Login;
 
 class TCPMessengerServer : public MThread{
 	TCPSocket* 			_serverSocket;
@@ -19,6 +21,8 @@ class TCPMessengerServer : public MThread{
 	vector<string> 		_initiatorSession;
 	vector<string> 		_wantedSession;
 	vector<Room*> 		_rooms;
+	Login* 				_login;
+
 public:
 	/**
 	 * Build the Messenger server
@@ -35,14 +39,12 @@ public:
 
 	//	int posInVec;
 
-	//	LoginManager* myLoginManager;
-
 
 	//	vector<TCPSocket*> connectedSocketsVect; //_openPeerVector
 
 	//
 	//
-	//	void run();
+		void run();
 	//	void listPeers();
 	//	void PrintOpenPeerVector();
 	//
