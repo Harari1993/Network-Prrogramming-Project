@@ -17,27 +17,6 @@ TCPMessengerServer::TCPMessengerServer(){
 
 TCPMessengerServer::~TCPMessengerServer(){};
 
-//vector<TCPSocket*> TCPMessengerServer::getOpenPeerVector(){
-//	return _openPeerVector;
-//}
-
-vector<string> TCPMessengerServer::getInitiatorSessions(){
-	return _initiatorSession;
-}
-
-vector<string> TCPMessengerServer::getWantesSession(){
-	return _wantedSession;
-}
-
-vector<Room*> TCPMessengerServer::getRooms(){
-	return _rooms;
-}
-
-vector<string> TCPMessengerServer::getIpToClientName(){
-	return _ipToClientName;
-}
-
-
 /*
  * The servers main loop
  */
@@ -64,9 +43,9 @@ void TCPMessengerServer::sendMsgToAllUsersInRoom(int msgType,string roomName, st
 	int userIndex;
 	int roomIndex = this->getRoomIndex(roomName);
 	//This loop is runs on all users in the room and informs if a user has joined or left the room
-	for(unsigned int i=0;i<this->_rooms.at(roomIndex)->getUsersInRoom().size();i++)
+	for(unsigned int i=0;i<this->_rooms.at(roomIndex)->_usersInRoom.size();i++)
 	{
-		string tempIPtosend = _rooms.at(roomIndex)->getUsersInRoom().at(i);
+		string tempIPtosend = _rooms.at(roomIndex)->_usersInRoom.at(i);
 		userIndex=this->getSocketIndex(_openPeerVector, tempIPtosend);
 		this->sendCommandToTCP(ROOM_STATUS_CHANGED,this->_openPeerVector.at(userIndex));
 		switch(msgType)
@@ -77,7 +56,7 @@ void TCPMessengerServer::sendMsgToAllUsersInRoom(int msgType,string roomName, st
 				string tempMsg = userName;
 				tempMsg.append(" Has Joined the room");
 
-				int numOfUsers = _rooms.at(roomIndex)->getUsersInRoom().size();
+				int numOfUsers = _rooms.at(roomIndex)->_usersInRoom.size();
 				this->sendMsgToTCP(tempMsg,this->_openPeerVector.at(userIndex));
 				this->sendCommandToTCP(numOfUsers,this->_openPeerVector.at(userIndex));
 				string usersVectorString = this->usersInRoomToString(roomName);
@@ -91,7 +70,7 @@ void TCPMessengerServer::sendMsgToAllUsersInRoom(int msgType,string roomName, st
 				//Informs all users about the user that left
 				string tempMsg = userName;
 				tempMsg.append(" Has Left the room");
-				int numOfUsers =_rooms.at(roomIndex)->getUsersInRoom().size();
+				int numOfUsers =_rooms.at(roomIndex)->_usersInRoom.size();
 				this->sendMsgToTCP(tempMsg,this->_openPeerVector.at(userIndex));
 				this->sendCommandToTCP(numOfUsers,this->_openPeerVector.at(userIndex));
 				string usersVectorString = this->usersInRoomToString(roomName);
@@ -111,10 +90,10 @@ string TCPMessengerServer::usersInRoomToString(string roomName)
 {
 	string tempIp;
 	int roomIndex = this->getRoomIndex(roomName);
-	for(unsigned int i=0;i<this->_rooms.at(roomIndex)->getUsersInRoom().size();i++)
+	for(unsigned int i=0;i<this->_rooms.at(roomIndex)->_usersInRoom.size();i++)
 	{
-		tempIp.append(this->_rooms.at(roomIndex)->getUsersInRoom().at(i));
-		if(i!=this->_rooms.at(roomIndex)->getUsersInRoom().size()-1)
+		tempIp.append(this->_rooms.at(roomIndex)->_usersInRoom.at(i));
+		if(i!=this->_rooms.at(roomIndex)->_usersInRoom.size()-1)
 			tempIp.append(" ");
 	}
 
@@ -129,44 +108,57 @@ string TCPMessengerServer::usersInRoomToString(string roomName)
 //		cout<<"PrintOpenPeerVector peer : "<<i<<" "<<openPeerVect.at(i)->destIpAndPort()<<endl;
 //	}
 //}
-///*
-// * prints the peers
-// */
-//void TCPMessengerServer::listPeers(){
-//	if(openPeerVect.size()==0)
-//	{
-//		cout<<"no peers connected"<<endl;
-//	}
-//	else
-//	{
-//		if(openPeerVect.size()!=0)
-//		{
-//			for(unsigned int i = 0;i<openPeerVect.size();i++)
-//			{
-//				if(openPeerVect.at(i)!=NULL)
-//				{
-//					string tmp = ipTOclientName.at(i);
-//					cout << tmp <<endl;
-//				}
-//			}
-//		}
-//
-//	}
-//}
-///*
-// * Simply prints all the users from the file
-// */
-//void TCPMessengerServer::printAllUsers()
-//{
-//	//GetUserNamesFromData actually returns a vector from the file
-//	vector<string> tempVect = this->GetUserNamesFromData();
-//	int numOfUsers = tempVect.size();
-//	for(int i=0 ; i< numOfUsers ; i++)
-//	{
-//		cout<<i+1<<". "<<tempVect.at(i)<<endl;
-//	}
-//}
-//
+
+
+/*
+ * prints the peers
+ */
+void TCPMessengerServer::printAllPeers(){
+	if(_openPeerVector.size()==0)
+	{
+		cout<<"no peers connected"<<endl;
+	}
+	else
+	{
+		if(_openPeerVector.size()!=0)
+		{
+			for(unsigned int i = 0;i<_openPeerVector.size();i++)
+			{
+				if(_openPeerVector.at(i)!=NULL)
+				{
+					string tmp = _ipToClientName.at(i);
+					cout << tmp <<endl;
+				}
+			}
+		}
+	}
+}
+
+void TCPMessengerServer::printAllRooms(){
+	if(_rooms.size()>0)
+	{
+		for(unsigned int i = 0 ; i<_rooms.size();i++)
+			cout<<i+1<<"."<<_rooms.at(i)->_roomName<<endl;
+		}
+	else
+	{
+		cout<<"No Opened Rooms."<<endl;
+	}
+}
+/*
+ * Simply prints all the users from the file
+ */
+void TCPMessengerServer::printAllUsers()
+{
+	//GetUserNamesFromData actually returns a vector from the file
+	vector<string> tempVect = this->getUserNamesFromFile();
+	int numOfUsers = tempVect.size();
+	for(int i=0 ; i< numOfUsers ; i++)
+	{
+		cout<<i+1<<". "<<tempVect.at(i)<<endl;
+	}
+}
+
 //void TCPMessengerServer::insertToOpenVector(TCPSocket* temp_soc)
 //{
 //	openPeerVect.push_back(temp_soc);
@@ -180,6 +172,17 @@ void TCPMessengerServer::sendCommandToTCP(int protocol,TCPSocket * tcp)
 	// Convert from long to TCP/IP network byte
 	protocol = htonl(protocol);
 	tcp->send((char*)&protocol,4);
+}
+
+/*
+ * Sends a message on the tcp connection
+ */
+void TCPMessengerServer::notifyShutdown()
+{
+	for(unsigned int i =0 ; i<_openPeerVector.size();i++)
+	{
+		sendCommandToTCP(SERVER_DISCONNECT,_openPeerVector.at(i));
+	}
 }
 
 
@@ -231,6 +234,7 @@ char * TCPMessengerServer::recieveMessageFromTCP(TCPSocket * tmpTCP)
 
 	tmpTCP->recv(buffer,msgLen);
 
+	cout << "recive: " << buffer << endl;
 	return buffer;
 }
 
@@ -261,18 +265,18 @@ string TCPMessengerServer::nameToIp(string userName)
 }
 
 
-///*
-// * Lists all the sessions
-// */
-//void  TCPMessengerServer::ListSessions() {
-//	if (this->initiatorSession.size() == 0) {
-//		cout << "There are no open sessions" << endl;
-//	} else {
-//		for(unsigned int i = 0; i < this->initiatorSession.size(); i++) {
-//			cout << this->ipToName(initiatorSession.at(i)) << " || " << this->ipToName(wantedSession.at(i)) << endl;
-//		}
-//	}
-//}
+/*
+ * Lists all the sessions
+ */
+void  TCPMessengerServer::printAllSessions() {
+	if (this->_initiatorSession.size() == 0) {
+		cout << "There are no open sessions" << endl;
+	} else {
+		for(unsigned int i = 0; i < this->_initiatorSession.size(); i++) {
+			cout << this->ipToName(_initiatorSession.at(i)) << " || " << this->ipToName(_wantedSession.at(i)) << endl;
+		}
+	}
+}
 
 /*
  * Sends messages
@@ -291,14 +295,18 @@ void TCPMessengerServer::sendMsgToTCP(string msg, TCPSocket* tcp){
  */
 int TCPMessengerServer::getRoomIndex(string roomName)
 {
-	unsigned int i = 0;
-
-//	while (i != _rooms.size()){
-//		if (strcmp((char*)roomName, (char*)vector.at(i)->_roomName) == 0){
-//			return i;
-//		}
-//	}
-	return -1;
+	bool foundroom=false;
+		unsigned int roomIndex;
+		for(roomIndex=0;roomIndex<this->_rooms.size();roomIndex++) {
+			if(roomName==this->_rooms.at(roomIndex)->_roomName) {
+				foundroom=true;
+				break;
+			}
+		}
+		if(foundroom)
+			return roomIndex;
+		else
+			return -1;
 }
 
 
@@ -327,38 +335,36 @@ string TCPMessengerServer::ipToName(string ip){
 
 	return NULL;
 }
-///*
-// * Prints all the users in a room
-// */
-//void TCPMessengerServer::printUserinRoom(string roomname)
-//{
-//	int roomIndex = this->findInRooms(roomname);
-//	if(roomIndex!=-1)
-//	{
-//		for(unsigned int i=0;i<this->Rooms.at(roomIndex)->usersInRoom.size();i++)
-//		{
-//			string tempname = this->ipToName(Rooms.at(roomIndex)->usersInRoom.at(i));
-//			cout<<i+1<<"."<<tempname<<endl;
-//		}
-//	}
-//	else
-//	{
-//		cout<<"No such room"<<endl;
-//	}
-//}
-//void TCPMessengerServer::close(){
-//
-//	serverSock->cclose();
-//	this->openPeerVect.clear();
-//	this->connectedSocketsVect.clear();
-//	this->myDis->isON = false;
-//	this->myLoginManager->isON = false;
-//
-//	delete this->myDis->MTL;
-//	delete myLoginManager->MTL;
-//	//delete myLoginManager;
-//}
-//
+/*
+ * Prints all the users in a room
+ */
+void TCPMessengerServer::printUserInRoom(string roomname)
+{
+	int roomIndex = this->getRoomIndex(roomname);
+	if(roomIndex!=-1)
+	{
+		for(unsigned int i=0;i<this->_rooms.at(roomIndex)->_usersInRoom.size();i++)
+		{
+			string tempname = this->ipToName(_rooms.at(roomIndex)->_usersInRoom.at(i));
+			cout<<i+1<<"."<<tempname<<endl;
+		}
+	}
+	else
+	{
+		cout<<"No such room"<<endl;
+	}
+}
+void TCPMessengerServer::close(){
+
+	_serverSocket->cclose();
+	this->_openPeerVector.clear();
+	this->_dispatcher->_isON = false;
+	this->_login->_isOn = false;
+
+	delete this->_dispatcher->_listener;
+	delete _login->_listener;
+}
+
 
 /*
  * This function gets all the user names from the file and returns them in a vector

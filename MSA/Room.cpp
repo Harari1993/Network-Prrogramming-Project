@@ -13,18 +13,6 @@ Room::Room(string roomName,string hostIp_Port,string roomHostName) {
 
 Room::~Room(){};
 
-string Room::getRoomName(){
-	return _roomName;
-}
-
-string Room::getHostName(){
-	return _hostName;
-}
-
-vector<string> Room::getUsersInRoom(){
-	return _usersInRoom;
-}
-
 void Room::addUserToRoom(string user){
 	_usersInRoom.push_back(user);
 }

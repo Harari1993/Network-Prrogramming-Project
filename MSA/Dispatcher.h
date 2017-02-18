@@ -9,9 +9,7 @@ class TCPMessengerServer;
 
 class Dispatcher : public MThread {
 private:
-	MultipleTCPSocketsListener* _listener;
-	TCPMessengerServer* _server;
-	bool _isON;
+
 
 	void openSessionWithPeer(TCPSocket* user);
 	void joinRoom(TCPSocket* user);
@@ -26,6 +24,10 @@ private:
 	void disconnect(TCPSocket* user);
 
 public:
+	MultipleTCPSocketsListener* _listener;
+	TCPMessengerServer* _server;
+	bool _isON;
+
 	Dispatcher(TCPMessengerServer* tcpMS);
 	virtual ~Dispatcher();
 

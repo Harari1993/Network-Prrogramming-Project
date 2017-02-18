@@ -28,19 +28,19 @@ int main(){
 			string command;
 			cin >> command;
 			if(command == "lu"){
-//				server->printAllUsers();;
+				server->printAllUsers();;
 			} else if(command == "lcu"){
-//				server->printAllPeers();
+				server->printAllPeers();
 			} else if (command == "ls"){
-//				server->printAllSessions();
+				server->printAllSessions();
 			} else if (command == "lr"){
-//				server->printAllRooms();
+				server->printAllRooms();
 			} else if (command == "lru"){
 				string roomname;
 				cin>>roomname;
-//				server->printUserInRoom(roomname);
+				server->printUserInRoom(roomname);
 			} else if (command == "x"){
-//				server->notifyShutdown();
+				server->notifyShutdown();
 				system("sleep 1");
 				break;
 			} else {
@@ -48,7 +48,7 @@ int main(){
 				printMenu();
 			}
 
-//			server->close();
+			server->close();
 			delete server;
 			cout<<"messenger was closed"<<endl;
 			return 0;
@@ -57,6 +57,4 @@ int main(){
     // 1. Implement the main loop of the Server
     // 2. Create a TCPMessengerServer 
     // 3. Create a method for each command in the TCPMessengerServer
-    //djojskjksk
-    //sjklsjlsld
 }

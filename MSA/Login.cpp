@@ -35,8 +35,11 @@ void Login::run(){
 		string currentConnectedIPandPort = currentUser->getIpAndPort();
 		cout << "Incoming login req "<< currentConnectedIPandPort << endl;
 
+		int nextCmd = _server->recieveCommandFromTCP(currentUser);
+		cout << nextCmd << endl;
+
 		//makes the sockets wait for incoming messages and parses commands if sent
-		switch(_server->recieveCommandFromTCP(currentUser))
+		switch(nextCmd)
 		{
 			case USER_LOGIN_REQUEST:
 			{
@@ -98,7 +101,7 @@ void Login::userLogin(TCPSocket* user){
 			string tempIptoName=userName+" "+user->getIpAndPort();
 
 			//We store the details of the user, with a name
-			_server->getIpToClientName().push_back(tempIptoName);
+			_server->_ipToClientName.push_back(tempIptoName);
 
 			//Informs the client that the login has been approved, get ready for UDPManager settings
 			_server->sendCommandToTCP(LOGIN_APPROVE_RESPONSE,user);//LOGIN_RESPONSE_APPROVE
@@ -216,7 +219,7 @@ void Login::createNewUser(TCPSocket* user){
 		string tempIptoName=userName+" "+user->getIpAndPort();
 
 		//We store the details of the user, with a name
-		_server->getIpToClientName().push_back(tempIptoName);
+		_server->_ipToClientName.push_back(tempIptoName);
 
 		//Informs the client that the login has been approved, get ready for UDPManager settings
 		_server->sendCommandToTCP(LOGIN_APPROVE_RESPONSE, user);//LOGIN_RESPONSE_APPROVE

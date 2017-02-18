@@ -171,7 +171,7 @@ void Dispatcher::openSessionWithPeer(TCPSocket* user){
 			_server->sendMsgToTCP(userName+" "+user->getIpAndPort(),peerToConnect);
 
 			//Extracts initiator and wanted peers to the strings vector
-			_server->getInitiatorSessions().push_back(user->getIpAndPort());
+			_server->_initiatorSession.push_back(user->getIpAndPort());
 			//_server->_wantedSession.push_back(peerToConnect->getIpAndPort());
 			puts("User is available");
 		}
@@ -198,7 +198,7 @@ void Dispatcher::joinRoom(TCPSocket* user){
 		_server->sendMsgToTCP(roomName,user);
 
 		//Adds the new user to the room's users list(ip:port)
-		_server->getRooms().at(roomIndex)->addUserToRoom(user->getIpAndPort());
+		_server->_rooms.at(roomIndex)->addUserToRoom(user->getIpAndPort());
 
 		//Gets the user's name by the client's IP
 		string userNameToSend = _server->ipToName(user->getIpAndPort());
@@ -213,21 +213,21 @@ void Dispatcher::closeSeesionWithPeer(TCPSocket* user){
 	string closeRequestPeer = user->getIpAndPort();
 
 	int indexInOpenVect;
-	for(i=0;i<_server->getInitiatorSessions().size();i++){
+	for(i=0;i<_server->_initiatorSession.size();i++){
 		//Returns the location of the session
-		if(_server->getInitiatorSessions().at(i) == closeRequestPeer){
-			indexInOpenVect = _server->getSocketIndex(_server->_openPeerVector, _server->getWantesSession().at(i));
+		if(_server->_initiatorSession.at(i) == closeRequestPeer){
+			indexInOpenVect = _server->getSocketIndex(_server->_openPeerVector, _server->_wantedSession.at(i));
 			break;
 		}
-		if(_server->getWantesSession().at(i)==closeRequestPeer){
-			indexInOpenVect = _server->getSocketIndex(_server->_openPeerVector, _server->getInitiatorSessions().at(i));
+		if(_server->_wantedSession.at(i)==closeRequestPeer){
+			indexInOpenVect = _server->getSocketIndex(_server->_openPeerVector, _server->_initiatorSession.at(i));
 			break;
 		}
 	}
 
 	//Remove the sessions from wantedSession+initiatorSession Vectors
-	_server->getInitiatorSessions().erase(_server->getInitiatorSessions().begin()+i);
-	_server->getWantesSession().erase(_server->getWantesSession().begin()+i);
+	_server->_initiatorSession.erase(_server->_initiatorSession.begin()+i);
+	_server->_wantedSession.erase(_server->_wantedSession.begin()+i);
 
 	//Sends CLOSE_SESSION_WITH_PEER to the other peer
 	_server->sendCommandToTCP(CLOSE_SESSION_WITH_PEER,_server->_openPeerVector.at(indexInOpenVect));
@@ -246,7 +246,7 @@ void Dispatcher::createNewRoom(TCPSocket* user){
 		string owner = _server->ipToName(user->getIpAndPort());
 
 		//Creates new room with the Ip&Port of the current user and push it to the Rooms Vector
-		_server->getRooms().push_back(new Room(roomName,user->getIpAndPort(),owner));
+		_server->_rooms.push_back(new Room(roomName,user->getIpAndPort(),owner));
 
 		//Sends CREATE_ROOM_APPROVED command to owner
 		_server->sendCommandToTCP(CREATE_ROOM_APPROVED,user);
@@ -259,7 +259,7 @@ void Dispatcher::leaveRoom(TCPSocket* user){
 
 	//Returns the index of the desired roomName from Rooms vector
 	int roomIndex = this->_server->getRoomIndex(roomNametoLeave);
-	_server->getRooms().at(roomIndex)->removeUserFromRoom(user->getIpAndPort());
+	_server->_rooms.at(roomIndex)->removeUserFromRoom(user->getIpAndPort());
 
 	//Gets the name of the leaving user
 	string tempNameFromIp= _server->ipToName(user->getIpAndPort());
@@ -275,7 +275,7 @@ void Dispatcher::closeRoomRequest(TCPSocket* user){
 
 	//Checks if the currentsUser is the owner of roomNametoClose
 	string userName=_server->ipToName(user->getIpAndPort());
-	string ownerName=_server->getRooms().at(roomIndex)->getHostName();
+	string ownerName=_server->_rooms.at(roomIndex)->_hostName;
 
 	// If it's not the owner
 	if(userName != ownerName){
@@ -284,15 +284,15 @@ void Dispatcher::closeRoomRequest(TCPSocket* user){
 	// If it's the owner
 	else{
 		//Loops on all users in the room and sends ROOM_CLOSED command
-		for(unsigned int i = 0; i<this->_server->getRooms().at(roomIndex)->getUsersInRoom().size();i++)
+		for(unsigned int i = 0; i<this->_server->_rooms.at(roomIndex)->_usersInRoom.size();i++)
 		{
-			string tempIptoSendClose = this->_server->getRooms().at(roomIndex)->getUsersInRoom().at(i);
+			string tempIptoSendClose = this->_server->_rooms.at(roomIndex)->_usersInRoom.at(i);
 			int userIndex = _server->getSocketIndex(_server->_openPeerVector, tempIptoSendClose);
 			_server->sendCommandToTCP(ROOM_CLOSED,_server->_openPeerVector.at(userIndex));
 
 		}
 		//Remove the room from Rooms Vector
-		_server->getRooms().erase(_server->getRooms().begin()+roomIndex);
+		_server->_rooms.erase(_server->_rooms.begin()+roomIndex);
 	}
 }
 
@@ -335,16 +335,16 @@ void Dispatcher::getUsersInRoom(TCPSocket* user){
 		string usersName;
 		string tempNameFromIp;
 
-		int numOfUsersInRoom = _server->getRooms().at(roomIndex)->getUsersInRoom().size();
+		int numOfUsersInRoom = _server->_rooms.at(roomIndex)->_usersInRoom.size();
 
 		//Loops on all users in the room
 		for(unsigned int i=0;i< numOfUsersInRoom;i++)
 		{
 			//Convert Ip&Port to user name
-			tempNameFromIp=_server->ipToName(_server->getRooms().at(roomIndex)->getUsersInRoom().at(i));
+			tempNameFromIp=_server->ipToName(_server->_rooms.at(roomIndex)->_usersInRoom.at(i));
 			//Adds the user name to the string by location(i)
 			usersName.append(tempNameFromIp);
-			if(i!=_server->getRooms().at(roomIndex)->getUsersInRoom().size()-1)
+			if(i!=_server->_rooms.at(roomIndex)->_usersInRoom.size()-1)
 				usersName.append(" ");
 		}
 
@@ -357,17 +357,17 @@ void Dispatcher::getUsersInRoom(TCPSocket* user){
 }
 
 void Dispatcher::getExistedRooms(TCPSocket* user){
-	int numOfRoom = _server->getRooms().size();
+	int numOfRoom = _server->_rooms.size();
 	string rooms;
 
 	//Loops on all rooms in server
 	for(unsigned int i=0; i< numOfRoom ;i++)
 	{
 		//Adds the room name to the string by location(i)
-		rooms.append(_server->getRooms().at(i)->getRoomName());
+		rooms.append(_server->_rooms.at(i)->_roomName);
 
 		// Add space
-		if(i!=_server->getRooms().size()-1){
+		if(i!=_server->_rooms.size()-1){
 			rooms.append(" ");
 		}
 	}

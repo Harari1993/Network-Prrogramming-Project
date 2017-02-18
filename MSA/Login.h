@@ -13,9 +13,6 @@ class TCPMessengerServer;
 class MultipleTCPSocketsListener;
 
 class Login : public MThread{
-	TCPMessengerServer* _server;
-	MultipleTCPSocketsListener* _listener;
-	bool _isOn;
 
 	void userLogin(TCPSocket* user);
 	int login(string userName, string password);
@@ -24,6 +21,11 @@ class Login : public MThread{
 	int Register(string user);
 
 public:
+	TCPMessengerServer* _server;
+	MultipleTCPSocketsListener* _listener;
+	bool _isOn;
+
+
 	Login(TCPMessengerServer* server);
 	virtual ~Login();
 
