@@ -73,13 +73,13 @@ int main() {
 		} else if (command == "o") {			// open a session with the user
 			string userName;
 			cin >> userName;
-			if (!messenger->open(userName)) {
+			if (!messenger->open("user", userName)) {
 				cout << "Failed opening session with client " << userName << endl;
 			}
 		} else if (command == "or") {			// open a session with room
 			string roomName;
 			cin >> roomName;
-			if (!messenger->open(roomName)) {
+			if (!messenger->open("room", roomName)) {
 				cout << "Failed opening session with room " << roomName << endl;
 			}
 		} else if (command == "s") {           // send message 

@@ -18,10 +18,7 @@ void* worker(void* arg){
 }
 
 void MThread::start(){
-	cout<< "Thread id in pthead: " << threadId << endl;
-	cout<< "Thread id in pthead: " << this << endl;
 	pthread_create(&threadId,NULL,worker,(void*)this);
-	cout<< "Thread id in pthead after: " << threadId << endl;
 }
 
 void MThread::waitForThread(){

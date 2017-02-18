@@ -14,6 +14,7 @@ class Dispatcher;
 class Login;
 
 class TCPMessengerServer : public MThread{
+public:
 	TCPSocket* 			_serverSocket;
 	Dispatcher* 		_dispatcher;
 	vector<TCPSocket*> 	_openPeerVector; 	// Connected users sockets
@@ -23,14 +24,13 @@ class TCPMessengerServer : public MThread{
 	vector<Room*> 		_rooms;
 	Login* 				_login;
 
-public:
 	/**
 	 * Build the Messenger server
 	 */
 	TCPMessengerServer();
 	~TCPMessengerServer();
 
-	vector<TCPSocket*> getOpenPeerVector();
+//	vector<TCPSocket*> getOpenPeerVector();
 	vector<string> getIpToClientName();
 	vector<string> getInitiatorSessions();
 	vector<string> getWantesSession();

@@ -23,36 +23,42 @@ void Login::run(){
 		}
 
 		_listener = new MultipleTCPSocketsListener();
-		_listener->addSockets(_server->getOpenPeerVector());
+		_listener->addSockets(_server->_openPeerVector);
 
 		//Get the socket for a user
 		TCPSocket* currentUser = _listener->listenToSocket(2);
 		if(currentUser==NULL) {
 			continue;
 		}
-//
-//		//we handle the current socket by ip and port
-//		string currentConnectedIPandPort = currentUser->destIpAndPort();
-//		cout << "Incoming login req "<< currentConnectedIPandPort << endl;
-//
+
+		//we handle the current socket by ip and port
+		string currentConnectedIPandPort = currentUser->getIpAndPort();
+		cout << "Incoming login req "<< currentConnectedIPandPort << endl;
+
 		//makes the sockets wait for incoming messages and parses commands if sent
 		switch(_server->recieveCommandFromTCP(currentUser))
 		{
-			case 8://USER_LOGIN_REQUEST
+			case USER_LOGIN_REQUEST:
 			{
+				cout << "in USER_LOGIN_REQUEST"<< endl;
 				userLogin(currentUser);
 				break;
 
 			}
-			case 23://CREATE_NEW_USER
+			case CREATE_NEW_USER:
 			{
+				cout << "in CREATE_NEW_USER"<< endl;
 				createNewUser(currentUser);
 				break;
 			}
-			case 26://DISCONNECT
+			case DISCONNECT:
 			{
+				cout << "in DISCONNECT"<< endl;
 				disconnect(currentUser);
 				break;
+			}
+			default:{
+				cout << "no macthing" << endl;
 			}
 		}
 	}
@@ -64,6 +70,7 @@ void Login::userLogin(TCPSocket* user){
 	//parsing the messages for login
 	string userName = strtok(newUser," ");
 	string password = strtok(NULL," ");
+	cout << "Trying to connect user: " << userName << endl;
 
 	//tempAuthentication used to assure the user can connect
 	int tempAuthentication = login(userName,password);
@@ -72,11 +79,12 @@ void Login::userLogin(TCPSocket* user){
 		bool isAlreadyConnected=false;
 		string tempName;
 		//checking if the user is already connected
-		for(unsigned int i =0 ; i< _server->getOpenPeerVector().size(); i++) {
+		for(unsigned int i =0 ; i< _server->_openPeerVector.size(); i++) {
 			cout << "open sock: " << i << endl;
-			tempName = _server->ipToName(_server->getOpenPeerVector().at(i)->getIpAndPort());
+			tempName = _server->ipToName(_server->_openPeerVector.at(i)->getIpAndPort());
 			if(userName==tempName) {
 				isAlreadyConnected=true;
+				cout << "user is already connected: " << userName << endl;
 				break;
 			}
 		}
@@ -86,35 +94,35 @@ void Login::userLogin(TCPSocket* user){
 			cout<<"User: "<<userName<<" Is Connected to server"<<endl;
 
 			//we insert the newly connected user to a vector so that we can remember he is connected
-			_server->getOpenPeerVector().push_back(user);
+			_server->_openPeerVector.push_back(user);
 			string tempIptoName=userName+" "+user->getIpAndPort();
 
 			//We store the details of the user, with a name
 			_server->getIpToClientName().push_back(tempIptoName);
 
 			//Informs the client that the login has been approved, get ready for UDPManager settings
-			_server->sendCommandToTCP(10,user);//LOGIN_RESPONSE_APPROVE
+			_server->sendCommandToTCP(LOGIN_APPROVE_RESPONSE,user);//LOGIN_RESPONSE_APPROVE
 			_server->sendMsgToTCP(user->getIpAndPort(),user);//Sends UDPManager settings
 
-			int indexUser = _server->getSocketIndex(_server->getOpenPeerVector(),user->getIpAndPort());
-			_server->getOpenPeerVector().erase(_server->getOpenPeerVector().begin() + indexUser);
+			int indexUser = _server->getSocketIndex(_server->_openPeerVector,user->getIpAndPort());
+			_server->_openPeerVector.erase(_server->_openPeerVector.begin() + indexUser);
 		}
 		else
 		{
 			//Informs the client that the login has failed
-			_server->sendCommandToTCP(9,user);//LOGIN_RESPONSE_ERROR
+			_server->sendCommandToTCP(LOGIN_ERROR_RESPONSE,user);//LOGIN_RESPONSE_ERROR
 		}
 	}
 	else if(tempAuthentication==1)
 	{
 		//Fail to login, userName was not found in the database
 		cout<<"the user name: "<<userName<<" does not exist"<<endl;
-		_server->sendCommandToTCP(9,user);//LOGIN_RESPONSE_ERROR
+		_server->sendCommandToTCP(LOGIN_ERROR_RESPONSE,user);//LOGIN_RESPONSE_ERROR
 	}
 	else{
 		//Fail to login, password does not match the userName
 		cout<<"the password: "<<password<<" is not correct for the user: "<<userName<<endl;
-		_server->sendCommandToTCP(9,user);//LOGIN_RESPONSE_ERROR
+		_server->sendCommandToTCP(LOGIN_ERROR_RESPONSE,user);//LOGIN_RESPONSE_ERROR
 	}
 }
 
@@ -180,19 +188,20 @@ int Login::login(string userName, string password)
 void Login::createNewUser(TCPSocket* user){
 	//Starts the creation process for a new user
 	string newUser = _server->recieveMessageFromTCP(user);
+	cout << "Trying to create new user: " << newUser << endl;
 
 	//Checks if that user already exists
 	int status = Register(newUser);
 
 	if(status !=1 ){
 		//User name already exists, send failure message to the client
-		_server->sendCommandToTCP(25,user);//NEW_USER_DENIED
+		_server->sendCommandToTCP(NEW_USER_DENIED,user);
 		cout << "failed to register" << endl;
 		_server->sendMsgToTCP(user->getIpAndPort(),user);
 	}
-	else{
+	else {
 		//User name approved to be a new one and added to the database
-		cout<<newUser<<" has been Registered and Connected to server"<<endl;
+		cout << newUser << " has been Registered and Connected to server" <<endl;
 
 		// copy the string
 		char* tempUserAndPass = strdup(newUser.c_str());
@@ -203,28 +212,28 @@ void Login::createNewUser(TCPSocket* user){
 
 
 		//we insert the newly connected user to a vector so that we can remember he is connected
-		_server->getOpenPeerVector().push_back(user);
+		_server->_openPeerVector.push_back(user);
 		string tempIptoName=userName+" "+user->getIpAndPort();
 
 		//We store the details of the user, with a name
 		_server->getIpToClientName().push_back(tempIptoName);
 
 		//Informs the client that the login has been approved, get ready for UDPManager settings
-		_server->sendCommandToTCP(10,user);//LOGIN_RESPONSE_APPROVE
+		_server->sendCommandToTCP(LOGIN_APPROVE_RESPONSE, user);//LOGIN_RESPONSE_APPROVE
 		_server->sendMsgToTCP(user->getIpAndPort(),user);//Sends UDPManager settings
 
-		int indexUser = _server->getSocketIndex(_server->getOpenPeerVector(),user->getIpAndPort());
-		_server->getOpenPeerVector().erase(_server->getOpenPeerVector().begin() + indexUser);
+		int indexUser = _server->getSocketIndex(_server->_openPeerVector,user->getIpAndPort());
+		_server->_openPeerVector.erase(_server->_openPeerVector.begin() + indexUser);
 
 	}
 }
 
 void Login::disconnect(TCPSocket* user){
 	// Get the user index
-	int indexUser = _server->getSocketIndex(_server->getOpenPeerVector(),user->getIpAndPort());
+	int indexUser = _server->getSocketIndex(_server->_openPeerVector,user->getIpAndPort());
 
 	// Remove the item in the user index
-	_server->getOpenPeerVector().erase(_server->getOpenPeerVector().begin() + indexUser);
+	_server->_openPeerVector.erase(_server->_openPeerVector.begin() + indexUser);
 }
 
 int Login::Register(string user){
@@ -253,6 +262,7 @@ int Login::Register(string user){
 
 	for(location=0;location<numOfUsers;location++)
 	{
+		// Check if the user is already exsit
 		if (strcmp(userName.c_str(), userNameBuffer[location].c_str()) ==0)
 		{
 			usersFile.close();

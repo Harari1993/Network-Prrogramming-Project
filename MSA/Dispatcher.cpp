@@ -46,7 +46,7 @@ void Dispatcher::run(){
 		}
 
 		_listener = new MultipleTCPSocketsListener();
-		_listener->addSockets(_server->getOpenPeerVector());
+		_listener->addSockets(_server->_openPeerVector);
 
 
 		//Get the socket for a user
@@ -124,6 +124,9 @@ void Dispatcher::run(){
 				disconnect(currentUser);
 				break;
 			}
+			default: {
+				cout << "no match dispacher" << endl;
+			}
 		}
 	}
 }
@@ -140,8 +143,8 @@ void Dispatcher::openSessionWithPeer(TCPSocket* user){
 	else{
 
 		//Get the relevant socket from the open peer vector
-		int indexOfrequestedPeer = _server->getSocketIndex(_server->getOpenPeerVector(), requested_userIP);
-		TCPSocket* peerToConnect = _server->getOpenPeerVector().at(indexOfrequestedPeer);
+		int indexOfrequestedPeer = _server->getSocketIndex(_server->_openPeerVector, requested_userIP);
+		TCPSocket* peerToConnect = _server->_openPeerVector.at(indexOfrequestedPeer);
 
 		//Sends OPEN_SESSION_WITH_PEER command to the wantedUserName
 		_server->sendCommandToTCP(OPEN_SESSION_WITH_PEER,peerToConnect);
@@ -213,11 +216,11 @@ void Dispatcher::closeSeesionWithPeer(TCPSocket* user){
 	for(i=0;i<_server->getInitiatorSessions().size();i++){
 		//Returns the location of the session
 		if(_server->getInitiatorSessions().at(i) == closeRequestPeer){
-			indexInOpenVect = _server->getSocketIndex(_server->getOpenPeerVector(), _server->getWantesSession().at(i));
+			indexInOpenVect = _server->getSocketIndex(_server->_openPeerVector, _server->getWantesSession().at(i));
 			break;
 		}
 		if(_server->getWantesSession().at(i)==closeRequestPeer){
-			indexInOpenVect = _server->getSocketIndex(_server->getOpenPeerVector(), _server->getInitiatorSessions().at(i));
+			indexInOpenVect = _server->getSocketIndex(_server->_openPeerVector, _server->getInitiatorSessions().at(i));
 			break;
 		}
 	}
@@ -227,7 +230,7 @@ void Dispatcher::closeSeesionWithPeer(TCPSocket* user){
 	_server->getWantesSession().erase(_server->getWantesSession().begin()+i);
 
 	//Sends CLOSE_SESSION_WITH_PEER to the other peer
-	_server->sendCommandToTCP(CLOSE_SESSION_WITH_PEER,_server->getOpenPeerVector().at(indexInOpenVect));
+	_server->sendCommandToTCP(CLOSE_SESSION_WITH_PEER,_server->_openPeerVector.at(indexInOpenVect));
 }
 
 void Dispatcher::createNewRoom(TCPSocket* user){
@@ -284,8 +287,8 @@ void Dispatcher::closeRoomRequest(TCPSocket* user){
 		for(unsigned int i = 0; i<this->_server->getRooms().at(roomIndex)->getUsersInRoom().size();i++)
 		{
 			string tempIptoSendClose = this->_server->getRooms().at(roomIndex)->getUsersInRoom().at(i);
-			int userIndex = _server->getSocketIndex(_server->getOpenPeerVector(), tempIptoSendClose);
-			_server->sendCommandToTCP(ROOM_CLOSED,_server->getOpenPeerVector().at(userIndex));
+			int userIndex = _server->getSocketIndex(_server->_openPeerVector, tempIptoSendClose);
+			_server->sendCommandToTCP(ROOM_CLOSED,_server->_openPeerVector.at(userIndex));
 
 		}
 		//Remove the room from Rooms Vector
@@ -296,13 +299,13 @@ void Dispatcher::closeRoomRequest(TCPSocket* user){
 void Dispatcher::getConnectedUsers(TCPSocket* user){
 	string usersName;
 
-	int numberOfUsers= _server->getOpenPeerVector().size();
+	int numberOfUsers= _server->_openPeerVector.size();
 
 	// Move on all the connected users
 	for(unsigned int i=0;i < numberOfUsers; i++)
 	{
 		// concate ip and port
-		usersName.append(_server->ipToName(_server->getOpenPeerVector().at(i)->getIpAndPort()));
+		usersName.append(_server->ipToName(_server->_openPeerVector.at(i)->getIpAndPort()));
 
 		// concate space
 		if(i != numberOfUsers -1){
@@ -411,6 +414,6 @@ void Dispatcher::getRegisteredUsers(TCPSocket* user){
 
 void Dispatcher::disconnect(TCPSocket* user){
 	//Gets the user's index from openPeerVect and erase it
-	int indexUser = _server->getSocketIndex(_server->getOpenPeerVector(),user->getIpAndPort());
-	_server->getOpenPeerVector().erase(_server->getOpenPeerVector().begin() + indexUser);
+	int indexUser = _server->getSocketIndex(_server->_openPeerVector,user->getIpAndPort());
+	_server->_openPeerVector.erase(_server->_openPeerVector.begin() + indexUser);
 }

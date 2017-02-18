@@ -4,10 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-using namespace std;
+//using namespace std;
 
 /**
- * initialize all properties
+ * Initialize all properties
  */
 TCPMessengerClient::TCPMessengerClient() {
 	_mainSocket = NULL;
@@ -221,6 +221,7 @@ bool TCPMessengerClient::connect(string ip) {
 		_mainSocket = new TCPSocket(ip,MSNGR_PORT);
 		start();
 		state = CONNECTED;
+		cout << "Connection successfully to: " << ip << endl;;
 		return true;
 	} else {
 		puts("Connection already opened");
@@ -239,42 +240,72 @@ bool TCPMessengerClient::isConnected() {
  * Disconnect from messenger server
  */
 bool TCPMessengerClient::disconnect() {
-	if (_isRunning) {
-		if (isActiveClientSession()) {
-			closeActiveSession();
+	if(state!=NOT_CONNECTED)
+		{
+			if(state==IN_ROOM) {
+				this->leaveCurrentRoom();
+			}
+			if(state==IN_SESSION) {
+				this->closeActiveSession();
+			}
+
+			this->TCPtoServerCommandProtocol(DISCONNECT);
+			system("sleep 1");
+			if (udpManager != NULL) {
+				this->udpManager->running=false;
+			}
+
+			_mainSocket->cclose();
+			delete _mainSocket;
+			_mainSocket = NULL;
+			this->state = NOT_CONNECTED;
+			return true;
 		}
-
-		sendCommand(EXIT);
-
-		_mainSocket->cclose();
-		delete _mainSocket;
-		_mainSocket = NULL;
-	}
-
-	_isRunning = false;
-	this->waitForThread();
-
-	return true;
+		else
+		{
+			puts("You are not connected to the server");
+			return true;
+		}
+		return false;
 }
 
 /**
  * Open session with the given peer address (ip:port)
  */
-bool TCPMessengerClient::open(string address) {
-	if (isActiveClientSession()) {
-		closeActiveSession();
-	}
-
-	if (!isConnected()) {
-		cout << "Not connected to server" << endl;
+bool TCPMessengerClient::open(string sessionType, string name) {
+	//First we check if you connected to the server
+	if (isConnected()) {
+		//Then we check if you are not already in a session
+		if(state != CONNECTED) {
+			if(strcmp(sessionType.c_str(),"user")==0) {
+				if (state == IN_SESSION) {
+					this->closeActiveSession();
+				}
+				else if (state == IN_ROOM) {
+					this->leaveCurrentRoom();
+				}
+				this->TCPtoServerMessage(name, OPEN_SESSION_WITH_PEER);
+			} else if(strcmp(sessionType.c_str(),"room")==0) {
+				if (state == IN_SESSION) {
+					this->closeActiveSession();
+				}
+				else if (state == IN_ROOM) {
+					this->leaveCurrentRoom();
+				}
+			this->TCPtoServerMessage(name, JOIN_ROOM);
+			} else {
+				puts("Invalid input");
+				return false;
+			}
+			return true;
+		} else {
+			puts("You are not logged in to the chat");
+			return false;
+		}
+	} else {
+		puts("You are not connected to server");
 		return false;
 	}
-
-	cout << "Opening session with: " << address << endl;
-
-	_isActiveSession = sendCommand(OPEN_SESSION_WITH_PEER) && sendData(address);
-
-	return isActiveClientSession();
 }
 
 
@@ -485,7 +516,7 @@ int TCPMessengerClient::readCommand() {
 	int command;
 	_mainSocket->recv((char*) &command, 4);
 	command = ntohl(command);
-
+	cout << "command client: " << command << endl;
 	return command;
 }
 

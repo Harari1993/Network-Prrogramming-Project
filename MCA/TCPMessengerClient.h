@@ -47,7 +47,7 @@ public:
 	/**
 	 * open session with the given peer address (ip:port)
 	 */
-	bool open(string address);
+	bool open(string sessionType, string address);
 
 	/**
 	 * return true if a session is active

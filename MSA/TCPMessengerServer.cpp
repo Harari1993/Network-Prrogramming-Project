@@ -17,9 +17,9 @@ TCPMessengerServer::TCPMessengerServer(){
 
 TCPMessengerServer::~TCPMessengerServer(){};
 
-vector<TCPSocket*> TCPMessengerServer::getOpenPeerVector(){
-	return _openPeerVector;
-}
+//vector<TCPSocket*> TCPMessengerServer::getOpenPeerVector(){
+//	return _openPeerVector;
+//}
 
 vector<string> TCPMessengerServer::getInitiatorSessions(){
 	return _initiatorSession;
@@ -53,7 +53,6 @@ void TCPMessengerServer::run(){
 		TCPSocket* tmpTCP= _serverSocket->listenAndAccept();
 		if (tmpTCP != NULL) {
 			_openPeerVector.push_back(tmpTCP);
-			//insertToOpenVector(tmpTCP);
 		}
 	}
 }
@@ -209,6 +208,7 @@ int TCPMessengerServer::recieveCommandFromTCP(TCPSocket * tmpTCP) {
 
 	//converts a u_long from host to TCP/IP network byte order
 	command = htonl(command);
+	cout << "command: " << command << endl;
 	return command;
 }
 
