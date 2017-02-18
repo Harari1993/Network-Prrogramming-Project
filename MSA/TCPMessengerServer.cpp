@@ -198,7 +198,7 @@ int TCPMessengerServer::getSocketIndex(vector<TCPSocket*> vector, string address
 int TCPMessengerServer::recieveCommandFromTCP(TCPSocket * tmpTCP) {
 	int command;
 	tmpTCP->recv((char*)&command,4);
-
+	cout << "recv" << endl;
 	//converts a u_long from host to TCP/IP network byte order
 	command = htonl(command);
 	cout << "command: " << command << endl;

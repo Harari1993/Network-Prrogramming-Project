@@ -36,7 +36,6 @@ TCPSocket* MultipleTCPSocketsListener::listenToSocket(int timeout){
 		FD_SET((*iter)->getSocketFd(), &fdset);
 	}
 
-	//perform the select
 	int returned;
 	if (timeout>0){
 		returned = select(sizeof(fdset)*8, &fdset, NULL, NULL, &tv);
@@ -45,11 +44,12 @@ TCPSocket* MultipleTCPSocketsListener::listenToSocket(int timeout){
 	}
 
 	// if there is a ready socket
-	if (returned) {
+	if (returned == 0) {
 		for (int i = 0; i < highfd; i++) {
 			TCPSocket* tmpSocket = sockets[i];
 
-			if (FD_ISSET(tmpSocket->getSocketFd(), &fdset)) {
+			//  tests to see if a file descriptor is part of the set
+			if (FD_ISSET(tmpSocket->getSocketFd(), &fdset) == 0) {
 				return tmpSocket;
 			}
 		}

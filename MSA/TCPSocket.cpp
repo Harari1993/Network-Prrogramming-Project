@@ -89,7 +89,7 @@ TCPSocket* TCPSocket::listenAndAccept() {
 int TCPSocket::recv(char* buffer, int length) {
 	// read from the socket
 	int byteRead = read(_socket_fd, buffer, length);
-
+	cout << "byte " << byteRead << endl;
 	return byteRead;
 }
 

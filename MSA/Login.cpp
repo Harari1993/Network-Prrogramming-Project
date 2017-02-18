@@ -18,6 +18,7 @@ void Login::run(){
 	while (_isOn) {
 //		string buffer;
 		//initialize multiple socket listener
+
 		if (_listener != NULL){
 			delete _listener;
 		}
@@ -31,12 +32,12 @@ void Login::run(){
 			continue;
 		}
 
+
 		//we handle the current socket by ip and port
 		string currentConnectedIPandPort = currentUser->getIpAndPort();
-		cout << "Incoming login req "<< currentConnectedIPandPort << endl;
 
 		int nextCmd = _server->recieveCommandFromTCP(currentUser);
-		cout << nextCmd << endl;
+		cout << " NEXT COMMAND " << nextCmd << endl;
 
 		//makes the sockets wait for incoming messages and parses commands if sent
 		switch(nextCmd)
