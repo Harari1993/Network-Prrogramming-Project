@@ -516,7 +516,6 @@ int TCPMessengerClient::readCommand() {
 	int command;
 	_mainSocket->recv((char*) &command, 4);
 	command = ntohl(command);
-	cout << "command client: " << command << endl;
 	return command;
 }
 

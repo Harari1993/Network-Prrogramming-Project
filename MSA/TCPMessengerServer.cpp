@@ -99,16 +99,6 @@ string TCPMessengerServer::usersInRoomToString(string roomName)
 
 	return tempIp;
 }
-//
-//
-//void TCPMessengerServer::PrintOpenPeerVector()
-//{
-//	for(unsigned int i=0;i<this->openPeerVect.size();i++)
-//	{
-//		cout<<"PrintOpenPeerVector peer : "<<i<<" "<<openPeerVect.at(i)->destIpAndPort()<<endl;
-//	}
-//}
-
 
 /*
  * prints the peers
