@@ -47,12 +47,12 @@ int main(){
 				cout<<"wrong input"<<endl;
 				printMenu();
 			}
-
+		}
 			server->close();
 			delete server;
 			cout<<"messenger was closed"<<endl;
 			return 0;
-		}
+
     // TODO:
     // 1. Implement the main loop of the Server
     // 2. Create a TCPMessengerServer 
